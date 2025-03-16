@@ -1,97 +1,85 @@
 import random
-import secrets
 from rest_framework import serializers
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from .utils import encrypt_seed, decrypt_seed
+from .models import Wallet
 
 User = get_user_model()
 
-# Pequeno dicionário de palavras para demonstração
+# Lista de palavras simulada
 WORD_LIST = [
-    "apple","banana","cat","dog","elephant","fox","grape","house","ice","jacket",
-    "king","lion","monkey","notebook","orange","pig","queen","rabbit","sun","tree",
-    "umbrella","violin","wolf","xenon","yellow","zebra","dance","eagle","flower"
+    "apple", "banana", "cat", "dog", "elephant", "fox", "grape", "house", "ice", "jacket",
+    "king", "lion", "monkey", "notebook", "orange", "pig", "queen", "rabbit", "sun", "tree",
+    "umbrella", "violin", "wolf", "xenon", "yellow", "zebra", "dance", "eagle", "flower"
 ]
 
 def generate_24_words():
-    """Gera 24 palavras aleatórias a partir de uma lista."""
-    selected_words = []
-    for _ in range(24):
-        selected_words.append(random.choice(WORD_LIST))
-    return ' '.join(selected_words)
+    return ' '.join(random.choices(WORD_LIST, k=24))
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    # Campos para senha e confirmação
+    # As senhas são campos write_only, e a seed_key é apenas de leitura
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-    
-    # Campos adicionais (e-mail e telefone)
-    email = serializers.EmailField(required=True)
-    phone = serializers.CharField(required=True)
-    
-    # Será retornada apenas para exibição única durante o cadastro
     seed_key = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone',
-                  'password', 'confirm_password',
-                  'seed_key')
+        fields = ('username', 'email', 'phone', 'password', 'confirm_password', 'seed_key')
 
     def validate(self, data):
-        # Verifica se a senha e a confirmação de senha conferem
         if data['password'] != data['confirm_password']:
             raise serializers.ValidationError("As senhas não conferem.")
         return data
 
     def create(self, validated_data):
-        # Remove o confirm_password para não salvar no banco
+        # Remove o campo de confirmação, pois não será salvo
         validated_data.pop('confirm_password', None)
-        
-        # Extrai a senha
         password = validated_data.pop('password')
-
-        # Gera 24 palavras aleatórias como seed
+        
+        # Gera uma seed de 24 palavras e criptografa
         seed = generate_24_words()
-
-        # Criptografa a seed antes de armazenar
         encrypted_seed = encrypt_seed(seed)
-
+        
         # Cria o usuário
         user = User(**validated_data)
         user.set_password(password)
         user.encrypted_seed_key = encrypted_seed
         user.save()
-
-        # Insere a seed original para retorno único no serializer
+        
+        # Adiciona a seed para exibição única (não é armazenada em texto plano no banco)
         user.seed_key = seed
         return user
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
-    seed_key = serializers.CharField(write_only=True)
+    seed_key = serializers.CharField(read_only=True)
 
     def validate(self, data):
         email = data.get('email')
         password = data.get('password')
-        seed_key_input = data.get('seed_key')
-
-        # Tentar buscar o usuário pelo e-mail
+        
+        # Buscar o usuário pelo e-mail
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise serializers.ValidationError("Usuário não encontrado.")
+        
+        # Autentica usando o username do usuário encontrado
+        user = authenticate(username=user.username, password=password)
+        if not user:
+            raise serializers.ValidationError("E-mail ou senha incorretos.")
+        
+        # Tenta descriptografar a seed_key armazenada
         try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("E-mail não encontrado.")
-
-        if not user.check_password(password):
-            raise serializers.ValidationError("Senha incorreta.")
-
-        decrypted_seed = decrypt_seed(user.encrypted_seed_key)
-        if seed_key_input != decrypted_seed:
-            raise serializers.ValidationError("Chave semente inválida.")
-
+            decrypted_seed = decrypt_seed(user.encrypted_seed_key)
+        except Exception as e:
+            raise serializers.ValidationError(f"Erro ao descriptografar seed key: {str(e)}")
+        
         data['user'] = user
+        data['seed_key'] = decrypted_seed
         return data
 
-
+class WalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = '__all__'

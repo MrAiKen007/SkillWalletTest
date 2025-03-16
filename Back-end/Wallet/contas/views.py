@@ -2,39 +2,157 @@ from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from .serializers import RegistrationSerializer, LoginSerializer
+from .models import Wallet
+from decimal import Decimal
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
-# View que exibe a página HTML
+# View para exibir a página de registro
 class RegistrationPageView(TemplateView):
-    template_name = "registration.html"  # o Django procurará "registration.html" em sua pasta de templates
+    template_name = "registration.html"
 
-# View que processa a API de cadastro (POST)
+# API de Cadastro (POST)
 class RegistrationAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response(
-                {
+            # Caso a Wallet não seja criada automaticamente via signals, descomente a linha abaixo:
+            # Wallet.objects.get_or_create(user=user)
+            return Response({
                     'message': 'Usuário registrado com sucesso!',
-                    'seed_key': serializer.data['seed_key']  # Exibido apenas uma vez
+                    'seed_key': serializer.data.get('seed_key', '')
                 },
                 status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# Exemplo de Login, se você quiser algo semelhante:
+# View para exibir a página de login
 class LoginPageView(TemplateView):
     template_name = "login.html"
 
+# API de Login (POST)
 class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
             login(request, user)
-            return Response({'message': 'Login realizado com sucesso!'}, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'Login realizado com sucesso!',
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'username': user.username
+                }
+            }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# View para exibir a página da Wallet
+class WalletPageView(TemplateView):
+    template_name = "wallet.html"
+
+# API para consultar o saldo da Wallet
+class WalletBalanceAPIView(APIView):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            wallet = Wallet.objects.get(user=request.user)
+            return Response({
+                'balance_kz': wallet.balance_kz,
+                'token_kz': wallet.token_kz
+            }, status=status.HTTP_200_OK)
+        except Wallet.DoesNotExist:
+            return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+class SendTokenAPIView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        receiver_email = request.data.get('receiver_email')
+        try:
+            # Converte o valor para Decimal a partir de uma string para evitar conversões para float
+            amount = Decimal(str(request.data.get('amount', '0')))
+        except Exception:
+            return Response({'error': 'Valor inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if amount <= 0:
+            return Response({'error': 'O valor deve ser maior que zero.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            sender_wallet = Wallet.objects.get(user=request.user)
+        except Wallet.DoesNotExist:
+            return Response({'error': 'Wallet do remetente não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            receiver = User.objects.get(email=receiver_email)
+            receiver_wallet = Wallet.objects.get(user=receiver)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário destinatário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        except Wallet.DoesNotExist:
+            return Response({'error': 'Wallet do destinatário não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if sender_wallet.balance_kz < amount:
+            return Response({'error': 'Saldo insuficiente.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Realiza a transferência
+        sender_wallet.balance_kz -= amount
+        receiver_wallet.balance_kz += amount
+        sender_wallet.save()
+        receiver_wallet.save()
+
+        return Response({'message': 'Transferência realizada com sucesso!'}, status=status.HTTP_200_OK)
+# API para receber tokens (aumenta o saldo da carteira e exibe o email do usuário)
+class ReceiveTokenAPIView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        try:
+            amount = float(request.data.get('amount', 0))
+        except ValueError:
+            return Response({'error': 'Valor inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if amount <= 0:
+            return Response({'error': 'O valor deve ser maior que zero.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            wallet = Wallet.objects.get(user=request.user)
+            wallet.balance_kz += amount
+            wallet.save()
+            return Response({
+                'message': 'Tokens recebidos com sucesso!',
+                'new_balance': str(wallet.balance_kz),
+                'email': request.user.email
+            }, status=status.HTTP_200_OK)
+        except Wallet.DoesNotExist:
+            return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+
+# API para depositar tokens (operações de depósito)
+class DepositTokenAPIView(APIView):
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            amount = Decimal(str(request.data.get('amount', '0')))
+        except Exception:
+            return Response({'error': 'Valor inválido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if amount <= 0:
+            return Response({'error': 'O valor deve ser maior que zero.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            wallet = Wallet.objects.get(user=request.user)
+            wallet.balance_kz += amount
+            wallet.save()
+            return Response({
+                'message': 'Depósito realizado com sucesso!',
+                'new_balance': str(wallet.balance_kz)
+            }, status=status.HTTP_200_OK)
+        except Wallet.DoesNotExist:
+            return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
