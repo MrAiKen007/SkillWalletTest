@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { margin-bottom: 30px; max-width: 400px; }
+    input, textarea { margin-bottom: 10px; padding: 5px; width: 100%; }
+    label { display: block; margin-top: 10px; }
+    button { padding: 10px 20px; cursor: pointer; }
+    .message { margin-top: 10px; color: green; }
+    .error { margin-top: 10px; color: red; }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+  <!-- O formulário será renderizado via Django, por isso pode conter {% csrf_token %} se necessário -->
+  <form id="loginForm" method="post">
+    {% csrf_token %}
+    <label for="loginEmail">E-mail:</label>
+    <input type="email" id="loginEmail" name="email" placeholder="seuemail@exemplo.com" required>
+    
+    <label for="loginPassword">Senha:</label>
+    <input type="password" id="loginPassword" name="password" required>
+    
+    <label for="loginSeed">Chave de 24 palavras:</label>
+    <textarea id="loginSeed" name="seed_key" rows="3" placeholder="Insira as 24 palavras separadas por espaço" required></textarea>
+    
+    <button type="submit">Entrar</button>
+  </form>
+  
+  <div id="loginResult"></div>
+  
+  <script>
+    // Função para obter o valor de um cookie (usada para CSRF)
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + "=")) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // URL do endpoint de login - ajuste conforme necessário
+    const loginURL = 'http://127.0.0.1:8000/api/contas/login/';
+
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const seed_key = document.getElementById("loginSeed").value.trim();
+      
+      // Monta o objeto com os dados para envio
+      const data = { email, password, seed_key };
+      
+      try {
+        const response = await fetch(loginURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrftoken
+          },
+          credentials: "include", // Envia os cookies junto com a requisição
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          document.getElementById("loginResult").innerHTML = `<p class="message">${result.message}</p>`;
+        } else {
+          document.getElementById("loginResult").innerHTML = `<p class="error">Erro: ${JSON.stringify(result)}</p>`;
+        }
+      } catch (error) {
+        document.getElementById("loginResult").innerHTML = `<p class="error">Erro: ${error}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
