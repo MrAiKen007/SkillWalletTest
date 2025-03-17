@@ -14,6 +14,7 @@
         .message { margin-top: 10px; color: green; }
         .error { margin-top: 10px; color: red; }
         #receiveSection { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
+        #dashboardButton { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -24,6 +25,11 @@
         <p><strong>Token KZ:</strong> <span id="tokenKZ">0</span></p>
         <p><strong>USD:</strong> <span id="usdPrice">Carregando...</span></p>
         <p><strong>TON:</strong> <span id="tonPrice">Carregando...</span></p>
+        
+        <!-- Botão para acessar o Dashboard de Investimento -->
+        <div id="dashboardButton">
+            <button type="button" onclick="goToInvestmentDashboard()">Ir para Dashboard de Investimento</button>
+        </div>
         
         <!-- Formulário para Enviar Tokens -->
         <form id="sendForm">
@@ -36,7 +42,7 @@
             <div id="sendResult"></div>
         </form>
 
-        <!-- Seção para Depositar Tokens -->
+        <!-- Formulário para Depositar Tokens -->
         <form id="depositForm">
             <h2>Depositar Tokens</h2>
             <label for="depositAmount">Valor (KZ):</label>
@@ -70,6 +76,11 @@
         }
         const csrftoken = getCookie('csrftoken');
 
+        function goToInvestmentDashboard() {
+            // Redireciona para o Dashboard de Investimento (ajuste a URL conforme necessário)
+            window.location.href = "/investment/";
+        }
+
         async function loadWallet() {
             const userData = JSON.parse(localStorage.getItem("userData"));
             if (!userData || !userData.username) {
@@ -87,7 +98,8 @@
                 });
                 if (!response.ok) throw new Error("Erro ao carregar wallet.");
                 const wallet = await response.json();
-                document.getElementById("balanceKZ").innerText = wallet.balance_kz || "0";
+                // Utilize o campo 'balance' conforme retornado pelo back-end
+                document.getElementById("balanceKZ").innerText = wallet.balance || "0";
                 document.getElementById("tokenKZ").innerText = wallet.token_kz || "0";
             } catch (error) {
                 console.error("Erro ao carregar wallet:", error);
@@ -182,4 +194,3 @@
     </script>
 </body>
 </html>
-

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Gerenciar Meu Token{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">Gerenciar Meu Token</h1>
+
+    <!-- Exibir detalhes atuais do token -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>Detalhes Atuais</h4>
+            <p><strong>Nome:</strong> <span id="currentName">{{ token.name }}</span></p>
+            <p><strong>Símbolo:</strong> <span id="currentSymbol">{{ token.symbol }}</span></p>
+            <p><strong>Supply Total:</strong> <span id="currentSupply">{{ token.supply }}</span></p>
+            <p><strong>Preço Atual (KZ):</strong> <span id="currentPrice">{{ token.price }}</span></p>
+        </div>
+    </div>
+
+    <!-- Formulário para atualizar os dados do token -->
+    <div class="card">
+        <div class="card-body">
+            <h4>Atualizar Token</h4>
+            <form id="updateTokenForm">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    <label for="tokenName">Nome:</label>
+                    <input type="text" class="form-control" id="tokenName" name="name" value="{{ token.name }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="tokenSymbol">Símbolo:</label>
+                    <input type="text" class="form-control" id="tokenSymbol" name="symbol" value="{{ token.symbol }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="tokenSupply">Supply Total:</label>
+                    <input type="number" class="form-control" id="tokenSupply" name="supply" value="{{ token.supply }}" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="tokenPrice">Preço Atual (KZ):</label>
+                    <input type="number" class="form-control" id="tokenPriceInput" name="price" value="{{ token.price }}" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Atualizar Token</button>
+                <div id="updateResult" class="mt-2"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Botão para voltar ao Dashboard de Investimento -->
+    <div class="mt-4">
+        <a href="/investment/" class="btn btn-secondary btn-block">Voltar ao Dashboard de Investimento</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Função para obter o valor do cookie CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+            const cookies = document.cookie.split(";");
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Função para atualizar os dados exibidos com os valores atuais do token
+    async function loadTokenDetails() {
+        try {
+            // Caso você tenha um endpoint GET para detalhes do token, você pode usá-lo.
+            // Aqui estamos assumindo que a página já possui os dados via template.
+            // Se necessário, faça uma chamada AJAX para /api/tokens/{{ token.id }}/
+            // e atualize os elementos "currentName", "currentSymbol", etc.
+        } catch (error) {
+            console.error("Erro ao carregar detalhes do token:", error);
+        }
+    }
+
+    // Enviar a atualização do token
+    document.getElementById("updateTokenForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+        const name = document.getElementById("tokenName").value.trim();
+        const symbol = document.getElementById("tokenSymbol").value.trim();
+        const supply = document.getElementById("tokenSupply").value;
+        const price = document.getElementById("tokenPriceInput").value;
+
+        const data = { name, symbol, supply, price };
+
+        try {
+            const response = await fetch(`/api/token/{{ token.id }}/update/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById("updateResult").innerHTML = `<p class="message">${result.message}</p>`;
+                // Atualize os detalhes exibidos com os novos dados
+                document.getElementById("currentName").innerText = result.token.name;
+                document.getElementById("currentSymbol").innerText = result.token.symbol;
+                document.getElementById("currentSupply").innerText = result.token.supply;
+                document.getElementById("currentPrice").innerText = result.token.price;
+            } else {
+                document.getElementById("updateResult").innerHTML = `<p class="error">${JSON.stringify(result)}</p>`;
+            }
+        } catch (error) {
+            console.error("Erro ao atualizar token:", error);
+            document.getElementById("updateResult").innerHTML = `<p class="error">Erro de conexão: ${error}</p>`;
+        }
+    });
+
+    // Inicializa a página (caso queira atualizar os detalhes periodicamente)
+    document.addEventListener("DOMContentLoaded", loadTokenDetails);
+</script>
+{% endblock %}

@@ -2,11 +2,11 @@ from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, get_user_model
 from .serializers import RegistrationSerializer, LoginSerializer
 from .models import Wallet
 from decimal import Decimal
-from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 # View para exibir a página de registro
@@ -62,12 +62,13 @@ class WalletBalanceAPIView(APIView):
         try:
             wallet = Wallet.objects.get(user=request.user)
             return Response({
-                'balance_kz': wallet.balance_kz,
-                'token_kz': wallet.token_kz
+                'balance': str(wallet.balance),
+                'token_kz': str(wallet.token_kz)
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
+# API para enviar tokens (transferência de um usuário para outro)
 class SendTokenAPIView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
@@ -75,7 +76,6 @@ class SendTokenAPIView(APIView):
         
         receiver_email = request.data.get('receiver_email')
         try:
-            # Converte o valor para Decimal a partir de uma string para evitar conversões para float
             amount = Decimal(str(request.data.get('amount', '0')))
         except Exception:
             return Response({'error': 'Valor inválido.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -96,16 +96,17 @@ class SendTokenAPIView(APIView):
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet do destinatário não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if sender_wallet.balance_kz < amount:
+        if sender_wallet.balance < amount:
             return Response({'error': 'Saldo insuficiente.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Realiza a transferência
-        sender_wallet.balance_kz -= amount
-        receiver_wallet.balance_kz += amount
+        sender_wallet.balance -= amount
+        receiver_wallet.balance += amount
         sender_wallet.save()
         receiver_wallet.save()
 
         return Response({'message': 'Transferência realizada com sucesso!'}, status=status.HTTP_200_OK)
+
 # API para receber tokens (aumenta o saldo da carteira e exibe o email do usuário)
 class ReceiveTokenAPIView(APIView):
     def post(self, request):
@@ -113,8 +114,8 @@ class ReceiveTokenAPIView(APIView):
             return Response({'error': 'Usuário não autenticado.'}, status=status.HTTP_401_UNAUTHORIZED)
         
         try:
-            amount = float(request.data.get('amount', 0))
-        except ValueError:
+            amount = Decimal(str(request.data.get('amount', '0')))
+        except Exception:
             return Response({'error': 'Valor inválido.'}, status=status.HTTP_400_BAD_REQUEST)
         
         if amount <= 0:
@@ -122,11 +123,11 @@ class ReceiveTokenAPIView(APIView):
         
         try:
             wallet = Wallet.objects.get(user=request.user)
-            wallet.balance_kz += amount
+            wallet.balance += amount
             wallet.save()
             return Response({
                 'message': 'Tokens recebidos com sucesso!',
-                'new_balance': str(wallet.balance_kz),
+                'new_balance': str(wallet.balance),
                 'email': request.user.email
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
@@ -148,11 +149,12 @@ class DepositTokenAPIView(APIView):
 
         try:
             wallet = Wallet.objects.get(user=request.user)
-            wallet.balance_kz += amount
+            wallet.balance += amount
             wallet.save()
             return Response({
                 'message': 'Depósito realizado com sucesso!',
-                'new_balance': str(wallet.balance_kz)
+                'new_balance': str(wallet.balance)
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
+

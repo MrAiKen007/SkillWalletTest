@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'contas',
+    'contas.apps.ContasConfig',
+    'investimento',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -129,3 +131,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'contas.CustomUser'
 
 ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", b'4OB_i5GHICkHMTDkozRfd6RPi3Hpvx4DZNbCtJ6yotk=')
+
+ASGI_APPLICATION = 'Wallet.asgi.application'
