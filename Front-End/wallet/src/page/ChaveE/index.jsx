@@ -1,52 +1,69 @@
-import BotaoCont from '../../components/Botao/BotaoCont';
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import BotaoCont from "../../components/Botao/BotaoCont";
+import { ChevronLeft } from "lucide-react";
 
 export default function ChaveConfirmar() {
-  const [texto, setTexto] = useState("");
-  const [focus, setFocus] = useState(false);
+  const [seedInput, setSeedInput] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Recupera a seed recebida via login (location.state.seedKey)
+  const seedFromLogin = location.state?.seedKey || "";
+
+  const handleConfirmSeed = () => {
+    // Se a seed digitada for igual à seed do login, prossegue
+    if (seedInput.trim() === seedFromLogin.trim()) {
+      navigate("/chave_semente_entra_confirmado");
+    } else {
+      setErrorMessage("Seed incorreta. Por favor, verifique e tente novamente.");
+    }
+  };
 
   return (
-    <main className="bg-[#f9f2df] min-h-screen flex flex-col items-center justify-center px-4">
+    <main className="bg-[#f9f2df] min-h-screen flex flex-col items-center justify-center px-4 relative">
+      {/* Botão Voltar */}
+      <button
+        className="absolute top-6 left-6 w-12 h-12 flex items-center justify-center rounded-full bg-[#dc143c] hover:bg-[#c01236]"
+        onClick={() => navigate(-1)}
+      >
+        <ChevronLeft className="h-5 w-5 text-white" />
+      </button>
+
       <div className="w-full max-w-md flex flex-col items-center">
-        
-        {/* Caixa dos Inputs */}
+        {/* Caixa do Input */}
         <section className="w-full bg-[#d1cbb8] rounded-lg p-6 shadow-md">
           <h2 className="text-[#343b3a] text-center font-medium text-lg mb-4">
-            Digita as chaves
+            Digite sua seed phrase:
           </h2>
-          <div className="relative w-full">
-            <textarea
-              className="w-full h-40 bg-transparent border-none text-[#343b3a] text-center text-base resize-none focus:outline-none"
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-              onFocus={() => setFocus(true)}
-              onBlur={() => setFocus(texto.length > 0)}
-            />
-            {!focus && texto.length === 0 && (
-              <span className="absolute top-4 left-1/2 transform -translate-x-1/2 text-gray-500 text-sm pointer-events-none">
-                Digite sua seed phrase aqui...
-              </span>
-            )}
-          </div>
+          <input
+            type="text"
+            placeholder="Digite sua seed phrase aqui..."
+            value={seedInput}
+            onChange={(e) => setSeedInput(e.target.value)}
+            autoFocus
+            className="w-full h-12 bg-transparent border border-gray-300 rounded-lg text-[#343b3a] text-base text-center px-4 focus:outline-none"
+          />
         </section>
 
-        {/* Botão de Continuar */}
+        {/* Mensagem de Erro */}
+        {errorMessage && (
+          <p className="mt-4 text-red-600 text-sm text-center">
+            {errorMessage}
+          </p>
+        )}
+
+        {/* Botão de Confirmar */}
         <footer className="mt-8 w-full flex justify-center">
           <BotaoCont
             className="w-[80%] max-w-[300px] h-14 bg-[#d91c5c] hover:bg-[#c01951] text-white rounded-full font-semibold text-lg flex items-center justify-center"
-            onClick={() => {
-              console.log("Redirecionando para /chave_semente_entra_confirmado");
-              navigate("/chave_semente_entra_confirmado");
-            }}
+            onClick={handleConfirmSeed}
           >
-            Continuar
+            Confirmar
           </BotaoCont>
         </footer>
-
       </div>
     </main>
   );
 }
-

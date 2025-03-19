@@ -1,11 +1,46 @@
 import { X } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import InputForm from "../../components/Input/Registra/inputForm";
 import BotaoCont from "../../components/Botao/BotaoCont";
 
 export default function Deposito() {
   const navigate = useNavigate();
+  const [amount, setAmount] = useState("");
+
+  // Função que chama a API de depósito
+  const handleDeposit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Token não encontrado. Faça login novamente.");
+        return;
+      }
+
+      // Faz a requisição POST para /api/wallet/deposit/
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/wallet/deposit/",
+        { amount }, // corpo da requisição
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        // Depósito bem-sucedido
+        alert("Depósito realizado com sucesso!");
+        // Redireciona para a wallet
+        navigate("/wallet");
+      }
+    } catch (error) {
+      console.error("Erro ao depositar:", error);
+      alert("Não foi possível depositar. Verifique o valor ou tente novamente.");
+    }
+  };
 
   return (
     <div className="flex justify-center items-center w-full min-h-screen bg-[#f9f2df] p-4">
@@ -18,14 +53,29 @@ export default function Deposito() {
           <X className="w-[30px] h-[30px] text-white" />
         </button>
 
-        {/* InputForm com placeholder "Depositar" e restrição para números */}
-        <div className="mt-20">
-          <InputForm placeholder="Depositar" type="number" className="w-full" />
+        <h1 className="mt-14 text-center text-2xl font-bold text-[#343b3a]">
+          Depósito
+        </h1>
+
+        {/* Campo de input para valor do depósito */}
+        <div className="mt-10">
+          <InputForm
+            placeholder="Valor do depósito"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full"
+          />
         </div>
 
-        {/* Botão que leva o usuário para a wallet */}
+        {/* Botão que dispara o depósito */}
         <div className="mt-6 flex justify-center">
-          <BotaoCont onClick={() => navigate("/wallet")} />
+          <BotaoCont
+            onClick={handleDeposit}
+            className="bg-[#dc143c] hover:bg-[#dc143c]/90 text-white w-full max-w-[300px] h-14 rounded-full font-semibold text-lg"
+          >
+            Confirmar Depósito
+          </BotaoCont>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ def create_wallet(sender, instance, created, **kwargs):
 
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'phone', 'is_staff', 'is_superuser')
+    list_display = ('username', 'email', 'is_staff', 'is_superuser')
     search_fields = ('username', 'email')
 
 @admin.register(Wallet)

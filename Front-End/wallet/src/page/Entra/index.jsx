@@ -3,24 +3,78 @@ import InputForm from '../../components/Input/Registra/inputForm';
 import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function EntraConta() {
-
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [errorEmail, setErrorEmail] = useState("");
+  const [errorPassword, setErrorPassword] = useState("");
 
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); 
+  const handleChange = (e) => {
+    if (e.target.id === "email") setErrorEmail("");
+    if (e.target.id === "password") setErrorPassword("");
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
+  const handleSubmit = async () => {
+    setErrorEmail("");
+    setErrorPassword("");
+
+    try {
+      // Faz login e espera receber seed_key e token do back-end
+      const response = await axios.post("http://localhost:8000/api/contas/login/", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      // Armazena o token JWT no localStorage para requisições futuras
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+
+      // Armazena o email do usuário no localStorage
+      if (response.data.user && response.data.user.email) {
+        localStorage.setItem("userEmail", response.data.user.email);
+      }
+
+      // Se o back-end retornar a seed_key, guarde em uma variável
+      const seedFromServer = response.data.seed_key;
+
+      // Navegue para a tela de confirmação, passando a seed
+      navigate("/chave_semente_entra", { state: { seedKey: seedFromServer } });
+    } catch (error) {
+      console.error("Erro ao entrar:", error);
+      const errorMsg = error.response?.data || "Erro ao fazer login. Verifique suas credenciais.";
+      let message = "";
+      if (typeof errorMsg === "string") {
+        message = errorMsg;
+      } else if (typeof errorMsg === "object") {
+        message = Object.values(errorMsg).flat().join(" ");
+      }
+      if (message.includes("Usuário não encontrado")) {
+        setErrorEmail(message);
+      } else if (message.includes("E-mail ou senha incorretos")) {
+        setErrorPassword(message);
+      } else {
+        alert(message);
+      }
+    }
+  };
 
   const formFields = [
-    { id: "nome", label: "Nome", type: "text" },
-    { id: "senha", label: "Senha", type: mostrarSenha ? "text" : "password" },
+    { id: "email", label: "Email", type: "text" },
+    { id: "password", label: "Senha", type: mostrarSenha ? "text" : "password" },
   ];
 
   return (
     <main className="bg-[#f9f2df] flex justify-center items-center w-full min-h-screen px-4">
       <div className="bg-[#f9f2df] w-full max-w-sm sm:max-w-md h-auto py-10 px-6 rounded-lg shadow-md relative">
-        
         {/* Botão de Voltar */}
         <button
           className="absolute top-6 left-6 w-12 h-12 flex items-center justify-center rounded-full bg-[#dc143c] hover:bg-[#c01236]"
@@ -38,22 +92,19 @@ export default function EntraConta() {
         <div className="mt-10 space-y-6">
           {formFields.map((field) => (
             <div key={field.id} className="flex flex-col">
-              {/* Label do input */}
               <label htmlFor={field.id} className="mb-1 text-[#343b3a] font-semibold">
                 {field.label}
               </label>
-
               <div className="relative">
-                {/* Input */}
                 <InputForm
                   type={field.type}
                   id={field.id}
                   placeholder={field.label}
+                  value={formData[field.id]}
+                  onChange={handleChange}
                   className="w-full h-14 bg-[#343b3a33] rounded-lg text-[#343b3a] text-base font-normal tracking-wide pl-4 pr-10"
                 />
-
-                {/* Ícone de mostrar/ocultar senha */}
-                {field.id === "senha" && (
+                {field.id === "password" && (
                   <button
                     type="button"
                     onClick={() => setMostrarSenha(!mostrarSenha)}
@@ -63,6 +114,12 @@ export default function EntraConta() {
                   </button>
                 )}
               </div>
+              {field.id === "email" && errorEmail && (
+                <span className="text-red-500 text-sm mt-1">{errorEmail}</span>
+              )}
+              {field.id === "password" && errorPassword && (
+                <span className="text-red-500 text-sm mt-1">{errorPassword}</span>
+              )}
             </div>
           ))}
         </div>
@@ -70,18 +127,13 @@ export default function EntraConta() {
         {/* Botão Entrar */}
         <div className="mt-10 flex justify-center">
           <BotaoCont
+            onClick={handleSubmit}
             className="w-full max-w-[317px] h-14 bg-[#dc143c] hover:bg-[#c01236] rounded-full font-semibold text-[#f9f2df] text-lg tracking-widest"
-            onClick={() => {
-              console.log("Botão clicado! Redirecionando...");
-              navigate("/chave_semente_entra");
-            }} 
           >
             Entrar
           </BotaoCont>
         </div>
-
       </div>
     </main>
   );
 }
-

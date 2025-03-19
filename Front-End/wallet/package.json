@@ -9,6 +9,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.8.3",
     "framer-motion": "^12.5.0",
     "lucide-react": "^0.483.0",
     "react": "^19.0.0",

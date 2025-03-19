@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'contas.apps.ContasConfig',
     'investimento',
     'channels',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'Wallet.urls'
@@ -133,3 +135,31 @@ AUTH_USER_MODEL = 'contas.CustomUser'
 ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", b'4OB_i5GHICkHMTDkozRfd6RPi3Hpvx4DZNbCtJ6yotk=')
 
 ASGI_APPLICATION = 'Wallet.asgi.application'
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "X-CSRFToken",
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}

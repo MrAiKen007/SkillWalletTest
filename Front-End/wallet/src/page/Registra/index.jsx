@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import BotaoCriar from "../../components/Botao/BotaoCriar";
 import Input from "../../components/Input/Registra/inputForm";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 
 export default function NovaConta() {
   const [formData, setFormData] = useState({
-    nome: "",
+    username: "",
     email: "",
-    senha: "",
-    confirmarSenha: "",
+    password: "",
+    confirm_password: "",
   });
-
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
   const navigate = useNavigate();
@@ -20,50 +20,69 @@ export default function NovaConta() {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.senha !== formData.confirmarSenha) {
+    if (formData.password !== formData.confirm_password) {
       alert("As senhas não coincidem!");
       return;
     }
 
-    console.log("Dados do formulário:", formData);
-    
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/contas/register/",
+        {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          confirm_password: formData.confirm_password,
+        }
+      );
 
-    navigate("/chaves_semente_registra");
+      alert(response.data.message);
+      console.log("Registro realizado com sucesso:", response.data);
+
+      // Se o back retornar a seed_key
+      const seedKey = response.data.seed_key;
+      navigate("/chaves_semente_registra", { state: { seedKey } });
+    } catch (error) {
+      console.error("Erro ao registrar:", error);
+      if (error.response && error.response.data) {
+        const errors = error.response.data;
+        let errorMessage = "Ocorreu um erro no registro:\n";
+        for (const key in errors) {
+          errorMessage += `${key}: ${errors[key]}\n`;
+        }
+        alert(errorMessage);
+      } else {
+        alert("Ocorreu um erro no registro. Verifique os dados e tente novamente.");
+      }
+    }
   };
 
   return (
     <div className="flex justify-center w-full min-h-screen bg-[#f9f2df]">
       <div className="relative w-full max-w-[428px] min-h-[926px] px-6 py-4 bg-[#f9f2df]">
-        
-        {/* Botão Voltar */}
         <button
           className="absolute top-[21px] left-[27px] w-[50px] h-[50px] rounded-full bg-[#dc143c] border-none hover:bg-[#c01236] flex items-center justify-center"
           onClick={() => navigate("/contas")}
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </button>
-
-        {/* Título */}
         <h1 className="mt-[131px] ml-[38px] text-2xl font-black text-[#343b3a]">
           Nova Conta
         </h1>
-
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="mt-10 space-y-6">
-          
-          {/* Nome */}
+          {/* Username */}
           <div>
-            <label htmlFor="nome" className="text-[#343b3a] font-medium">Nome</label>
+            <label htmlFor="username" className="text-[#343b3a] font-medium">Nome</label>
             <Input
-              id="nome"
+              id="username"
               type="text"
-              value={formData.nome}
+              value={formData.username}
               onChange={handleChange}
               className="mt-2 h-[59px] bg-[#343b3a33] rounded-[15px] border-none pl-6 text-base text-[#343b3a] w-full"
-              placeholder="Digite seu nome"
+              placeholder="Digite seu nome de usuário"
               required
             />
           </div>
@@ -84,12 +103,12 @@ export default function NovaConta() {
 
           {/* Senha */}
           <div>
-            <label htmlFor="senha" className="text-[#343b3a] font-medium">Senha</label>
+            <label htmlFor="password" className="text-[#343b3a] font-medium">Senha</label>
             <div className="relative mt-2">
               <Input
-                id="senha"
+                id="password"
                 type={mostrarSenha ? "text" : "password"}
-                value={formData.senha}
+                value={formData.password}
                 onChange={handleChange}
                 className="h-[59px] bg-[#343b3a33] rounded-[15px] border-none pl-6 pr-12 text-base text-[#343b3a] w-full"
                 placeholder="Digite sua senha"
@@ -107,12 +126,14 @@ export default function NovaConta() {
 
           {/* Confirmar Senha */}
           <div>
-            <label htmlFor="confirmarSenha" className="text-[#343b3a] font-medium">Confirmar Senha</label>
+            <label htmlFor="confirm_password" className="text-[#343b3a] font-medium">
+              Confirmar Senha
+            </label>
             <div className="relative mt-2">
               <Input
-                id="confirmarSenha"
+                id="confirm_password"
                 type={mostrarConfirmarSenha ? "text" : "password"}
-                value={formData.confirmarSenha}
+                value={formData.confirm_password}
                 onChange={handleChange}
                 className="h-[59px] bg-[#343b3a33] rounded-[15px] border-none pl-6 pr-12 text-base text-[#343b3a] w-full"
                 placeholder="Confirme sua senha"
@@ -128,9 +149,11 @@ export default function NovaConta() {
             </div>
           </div>
 
-          {/* Botão Criar */}
           <div className="w-[315px] h-16 mx-auto">
-            <BotaoCriar type="submit" className="w-full h-full bg-[#dc143c] rounded-full font-semibold text-[#f9f2df] text-[15px] tracking-[2.00px] hover:bg-[#c01236]">
+            <BotaoCriar
+              type="submit"
+              className="w-full h-full bg-[#dc143c] rounded-full font-semibold text-[#f9f2df] text-[15px] tracking-[2.00px] hover:bg-[#c01236]"
+            >
               Criar
             </BotaoCriar>
           </div>
@@ -139,5 +162,4 @@ export default function NovaConta() {
     </div>
   );
 }
-
 
