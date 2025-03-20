@@ -14,23 +14,20 @@ import dj_database_url
 from pathlib import Path
 import os
 from cryptography.fernet import Fernet
+from dotenv import load_dotenv
 from django.core.asgi import get_asgi_application
 
-
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Wallet.settings')
-
-application = get_asgi_application()
-
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Wallet.settings')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!(=gks&!k!#40+cw*2390w4iecs^&p33q1l#0px)blvk7!4e0q'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -136,7 +133,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'contas.CustomUser'
 
-ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY", b'4OB_i5GHICkHMTDkozRfd6RPi3Hpvx4DZNbCtJ6yotk=')
+ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
 
 ASGI_APPLICATION = 'Wallet.asgi.application'
 
@@ -170,3 +167,5 @@ REST_FRAMEWORK = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+application = get_asgi_application()
