@@ -11,7 +11,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
-
 class RegistrationAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -19,14 +18,23 @@ class RegistrationAPIView(APIView):
             user = serializer.save()
             # Opcional: criar automaticamente a wallet se ainda não existir
             # Wallet.objects.get_or_create(user=user)
+            
+            # Gerar um token JWT para o novo usuário
+            refresh = RefreshToken.for_user(user)
+            
             return Response({
-                    'message': 'Usuário registrado com sucesso!',
-                    'seed_key': serializer.data.get('seed_key', '')
+                'message': 'Usuário registrado com sucesso!',
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
                 },
-                status=status.HTTP_201_CREATED
-            )
+                'seed_key': serializer.data.get('seed_key', ''),
+                'token': str(refresh.access_token)
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# API de Login (POST)
 
 class LoginAPIView(APIView):
     def post(self, request):
@@ -45,6 +53,8 @@ class LoginAPIView(APIView):
                 'token': str(refresh.access_token)
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# O restante dos endpoints permanece inalterado.
 
 
 class WalletBalanceAPIView(APIView):

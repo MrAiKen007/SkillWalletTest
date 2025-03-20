@@ -42,7 +42,17 @@ export default function NovaConta() {
       alert(response.data.message);
       console.log("Registro realizado com sucesso:", response.data);
 
-      // Se o back retornar a seed_key
+      // Armazena o token JWT no localStorage para requisições futuras
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+
+      // Armazena o email do usuário no localStorage
+      if (response.data.user && response.data.user.email) {
+        localStorage.setItem("userEmail", response.data.user.email);
+      }
+
+      // Recupera a seed retornada pelo back-end
       const seedKey = response.data.seed_key;
       navigate("/chaves_semente_registra", { state: { seedKey } });
     } catch (error) {
@@ -60,6 +70,13 @@ export default function NovaConta() {
     }
   };
 
+  const formFields = [
+    { id: "username", label: "Nome", type: "text" },
+    { id: "email", label: "Email", type: "email" },
+    { id: "password", label: "Senha", type: mostrarSenha ? "text" : "password" },
+    { id: "confirm_password", label: "Confirmar Senha", type: mostrarConfirmarSenha ? "text" : "password" },
+  ];
+
   return (
     <div className="flex justify-center w-full min-h-screen bg-[#f9f2df]">
       <div className="relative w-full max-w-[428px] min-h-[926px] px-6 py-4 bg-[#f9f2df]">
@@ -75,7 +92,9 @@ export default function NovaConta() {
         <form onSubmit={handleSubmit} className="mt-10 space-y-6">
           {/* Username */}
           <div>
-            <label htmlFor="username" className="text-[#343b3a] font-medium">Nome</label>
+            <label htmlFor="username" className="text-[#343b3a] font-medium">
+              Nome
+            </label>
             <Input
               id="username"
               type="text"
@@ -89,7 +108,9 @@ export default function NovaConta() {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="text-[#343b3a] font-medium">Email</label>
+            <label htmlFor="email" className="text-[#343b3a] font-medium">
+              Email
+            </label>
             <Input
               id="email"
               type="email"
@@ -103,7 +124,9 @@ export default function NovaConta() {
 
           {/* Senha */}
           <div>
-            <label htmlFor="password" className="text-[#343b3a] font-medium">Senha</label>
+            <label htmlFor="password" className="text-[#343b3a] font-medium">
+              Senha
+            </label>
             <div className="relative mt-2">
               <Input
                 id="password"
