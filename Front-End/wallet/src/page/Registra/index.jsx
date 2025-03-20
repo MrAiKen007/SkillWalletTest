@@ -42,13 +42,13 @@ export default function NovaConta() {
       alert(response.data.message);
       console.log("Registro realizado com sucesso:", response.data);
 
-      // Armazena o token JWT no localStorage para requisições futuras
+      // Armazena o token JWT no localStorage
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
 
       // Armazena o email do usuário no localStorage
-      if (response.data.user && response.data.user.email) {
+      if (response.data.user?.email) {
         localStorage.setItem("userEmail", response.data.user.email);
       }
 
@@ -57,7 +57,7 @@ export default function NovaConta() {
       navigate("/chaves_semente_registra", { state: { seedKey } });
     } catch (error) {
       console.error("Erro ao registrar:", error);
-      if (error.response && error.response.data) {
+      if (error.response?.data) {
         const errors = error.response.data;
         let errorMessage = "Ocorreu um erro no registro:\n";
         for (const key in errors) {
@@ -69,13 +69,6 @@ export default function NovaConta() {
       }
     }
   };
-
-  const formFields = [
-    { id: "username", label: "Nome", type: "text" },
-    { id: "email", label: "Email", type: "email" },
-    { id: "password", label: "Senha", type: mostrarSenha ? "text" : "password" },
-    { id: "confirm_password", label: "Confirmar Senha", type: mostrarConfirmarSenha ? "text" : "password" },
-  ];
 
   return (
     <div className="flex justify-center w-full min-h-screen bg-[#f9f2df]">
@@ -185,4 +178,3 @@ export default function NovaConta() {
     </div>
   );
 }
-
