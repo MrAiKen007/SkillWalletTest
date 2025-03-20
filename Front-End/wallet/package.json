@@ -2,7 +2,7 @@
   "name": "wallet",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://mraiken007.github.io/SkillWalletTest",
+  "homepage": ".",
   "dependencies": {
     "@craco/craco": "^5.9.0",
     "@shadcn/ui": "^0.0.4",
