@@ -14,8 +14,15 @@ import dj_database_url
 from pathlib import Path
 import os
 from cryptography.fernet import Fernet
+from django.core.asgi import get_asgi_application
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Wallet.settings')
+
+application = get_asgi_application()
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -26,10 +33,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-!(=gks&!k!#40+cw*2390w4iecs^&p33q1l#0px)blvk7!4e0q'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
 
 # Application definition
 
@@ -84,9 +90,7 @@ WSGI_APPLICATION = 'Wallet.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.parse(
-        "postgresql://BD_owner:npg_jHLf9kzTUJV3@ep-broad-smoke-a5eklkrp-pooler.us-east-2.aws.neon.tech/BD?sslmode=require"
-    )
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 # Password validation
