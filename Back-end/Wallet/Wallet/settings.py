@@ -29,7 +29,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv("DEBUG") == "True"
 
 # 🌐 Hosts Permitidos: utilize variáveis de ambiente para maior flexibilidade
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", ".vercel.app,localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS = ["*"]
 
 # Aplicações Instaladas
 INSTALLED_APPS = [
@@ -44,19 +44,21 @@ INSTALLED_APPS = [
     'investimento',
     'channels',
     'corsheaders',
+    'whitenoise.runserver_nostatic',
 ]
 
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Middleware do CORS
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 # Configuração de URL
@@ -105,6 +107,7 @@ USE_TZ = True
 # Arquivos Estáticos
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Configuração do usuário personalizado
 AUTH_USER_MODEL = 'contas.CustomUser'
@@ -113,9 +116,8 @@ AUTH_USER_MODEL = 'contas.CustomUser'
 ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
 
 # Configuração do CORS
-CORS_ALLOWED_ORIGINS = [
-    "https://skillwallet.netlify.app",
-]
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "https://skillwallet.netlify.app").split(",")
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 CORS_ALLOW_HEADERS = ["content-type", "authorization", "X-CSRFToken"]
@@ -132,12 +134,13 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],  # Para produção, considere usar um serviço Redis externo
+            "hosts": [os.getenv("REDIS_URL", "redis://127.0.0.1:6379")],
         },
     },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 # Se desejar, pode expor a aplicação ASGI para uso com servidores ASGI:
 # (Esse comando é opcional se o seu arquivo asgi.py já define a variável 'application')
