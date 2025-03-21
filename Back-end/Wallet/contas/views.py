@@ -11,6 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+# 🔐 Registro de Usuários
 class RegistrationAPIView(APIView):
     def post(self, request):
         serializer = RegistrationSerializer(data=request.data)
@@ -34,8 +35,7 @@ class RegistrationAPIView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# API de Login (POST)
-
+# 🔐 Login de Usuários
 class LoginAPIView(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -54,9 +54,7 @@ class LoginAPIView(APIView):
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# O restante dos endpoints permanece inalterado.
-
-
+# 💰 Consulta de Saldo da Wallet
 class WalletBalanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -65,11 +63,12 @@ class WalletBalanceAPIView(APIView):
             wallet = Wallet.objects.get(user=request.user)
             return Response({
                 'balance': str(wallet.balance),
-                'token_plc': str(wallet.token_kz)  # Renomeado de token_kz para token_plc
+                'token_plc': str(wallet.token_kz)  # Se renomeado de token_kz para token_plc
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
+# 💸 Transferência de Tokens entre Usuários
 class SendTokenAPIView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
@@ -107,7 +106,7 @@ class SendTokenAPIView(APIView):
 
         return Response({'message': 'Transferência realizada com sucesso!'}, status=status.HTTP_200_OK)
 
-
+# 💰 Recebimento de Tokens
 class ReceiveTokenAPIView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
@@ -133,7 +132,7 @@ class ReceiveTokenAPIView(APIView):
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
 
-
+# 💵 Depósito de Tokens
 class DepositTokenAPIView(APIView):
     def post(self, request):
         if not request.user.is_authenticated:
@@ -157,4 +156,3 @@ class DepositTokenAPIView(APIView):
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)
-
