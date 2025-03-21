@@ -30,7 +30,7 @@ export default function NovaConta() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/contas/register/",
+        "https://skill-wallet-test.vercel.app/api/contas/register/",
         {
           username: formData.username,
           email: formData.email,
@@ -178,3 +178,4 @@ export default function NovaConta() {
     </div>
   );
 }
+
