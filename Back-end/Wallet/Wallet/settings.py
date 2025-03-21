@@ -30,9 +30,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Wallet.settings')
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = ['.vercel.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", ".vercel.app,localhost,127.0.0.1").split(",")
 
 # Application definition
 
@@ -139,7 +139,7 @@ ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
 ASGI_APPLICATION = 'Wallet.asgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "https://skillwallet.netlify.app/",
+    "https://skillwallet.netlify.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

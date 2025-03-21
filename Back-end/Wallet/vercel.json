@@ -2,14 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "Wallet/asgi.py",
-      "use": "@vercel/python"
+      "src": "manage.py",
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "15mb" }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "Wallet/asgi.py"
+      "dest": "manage.py"
     }
   ]
 }
