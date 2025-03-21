@@ -15,7 +15,7 @@ class PriceConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         # Caso queira tratar mensagens do cliente (não obrigatório se só for enviar updates)
         data = json.loads(text_data)
-        # Processar dados se necessário
+        # Processar dados se necessário, se quiser tratar mensagens do front-end
 
     async def send_price_update(self, event):
         # Envia a mensagem para o WebSocket
