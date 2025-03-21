@@ -1,9 +1,0 @@
-*.pyc
-__pycache__/
-*.pyo
-.git/
-tests/
-docs/
-local_settings.py
-*.log
-node_modules/
