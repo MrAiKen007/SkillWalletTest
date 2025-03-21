@@ -39,7 +39,7 @@ export default function Enviar() {
 
       // Envia para a API de envio os dados de receiver_email e amount.
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/wallet/send/",
+        "https://skill-wallet-test.vercel.app/api/wallet/send/",
         {
           receiver_email: formData.email, // agora usando o campo "email"
           amount: formData.montante,

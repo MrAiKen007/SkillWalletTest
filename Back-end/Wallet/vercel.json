@@ -2,16 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "Wallet/asgi.py",
+      "src": "asgi.py", 
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "Wallet/asgi.py"
+      "dest": "asgi.py"
     }
   ]
 }
-
-  

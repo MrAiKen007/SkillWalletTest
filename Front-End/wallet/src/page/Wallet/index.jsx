@@ -47,7 +47,7 @@ export default function WalletPage() {
           return;
         }
 
-        const response = await fetch("http://127.0.0.1:8000/api/wallet/balance/", {
+        const response = await fetch("https://skill-wallet-test.vercel.app/api/wallet/balance/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

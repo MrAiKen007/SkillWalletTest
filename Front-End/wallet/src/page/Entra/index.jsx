@@ -28,7 +28,7 @@ export default function EntraConta() {
 
     try {
       // Faz login e espera receber seed_key e token do back-end
-      const response = await axios.post("http://localhost:8000/api/contas/login/", {
+      const response = await axios.post("https://skill-wallet-test.vercel.app/api/contas/login/", {
         email: formData.email,
         password: formData.password,
       });
