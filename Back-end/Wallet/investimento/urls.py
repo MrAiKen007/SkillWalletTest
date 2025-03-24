@@ -6,8 +6,8 @@ from .views_investment import (
     InvestmentWithdrawAPIView,
     TokensListAPIView,
     TokenDetailAPIView,
-    TokenBuyAPIView,      # Certifique-se de que esta classe está definida
-    TokenSellAPIView,     # Idem para esta classe
+    TokenBuyAPIView,
+    TokenSellAPIView,
     InvestmentBalanceAPIView,
     TokenTradeAPIView,
     TokenChartAPIView,

@@ -90,11 +90,6 @@ class TokenDetailAPIView(APIView):
 # TRADING (Compra/Venda com ajuste de preço)
 # ------------------------------
 class TokenTradeAPIView(APIView):
-    """
-    POST /api/tokens/<token_id>/trade/
-    Body: { "type": "buy" ou "sell", "quantity": 10, "price": 20 }
-    Ajusta o preço do token com base na quantidade negociada e no supply.
-    """
     def post(self, request, token_id):
         trade_type = request.data.get("type")
         try:
@@ -191,9 +186,7 @@ class TokenChartAPIView(APIView):
         transactions = TokenTransaction.objects.filter(token_id=token_id).order_by("created_at")
         timestamps = []
         prices = []
-        # Neste exemplo simples, usamos o preço da transação como dado do gráfico.
         for t in transactions:
-            # Formata a data/hora para exibição (por exemplo, HH:MM)
             timestamps.append(t.created_at.strftime("%H:%M"))
             prices.append(float(t.price_per_unit))
         return Response({"timestamps": timestamps, "prices": prices}, status=status.HTTP_200_OK)

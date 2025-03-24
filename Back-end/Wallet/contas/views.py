@@ -16,10 +16,6 @@ class RegistrationAPIView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            # Opcional: criar automaticamente a wallet se ainda não existir
-            # Wallet.objects.get_or_create(user=user)
-            
-            # Gerar um token JWT para o novo usuário
             refresh = RefreshToken.for_user(user)
             
             return Response({
@@ -54,8 +50,6 @@ class LoginAPIView(APIView):
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# O restante dos endpoints permanece inalterado.
-
 
 class WalletBalanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -65,7 +59,7 @@ class WalletBalanceAPIView(APIView):
             wallet = Wallet.objects.get(user=request.user)
             return Response({
                 'balance': str(wallet.balance),
-                'token_plc': str(wallet.token_kz)  # Renomeado de token_kz para token_plc
+                'token_plc': str(wallet.token_kz)
             }, status=status.HTTP_200_OK)
         except Wallet.DoesNotExist:
             return Response({'error': 'Wallet não encontrada.'}, status=status.HTTP_404_NOT_FOUND)

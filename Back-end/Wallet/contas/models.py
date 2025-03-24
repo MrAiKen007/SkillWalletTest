@@ -16,7 +16,6 @@ class Wallet(models.Model):
     token_kz = models.DecimalField(default=Decimal("0.00"), max_digits=15, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        # Sempre atualiza token_kz para ser igual a balance
         self.token_kz = self.balance
         super().save(*args, **kwargs)
 

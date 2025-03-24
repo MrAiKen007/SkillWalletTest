@@ -20,7 +20,7 @@ class TokenizationRequest(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     valuation = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))  # ex: 10.00%
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal("0.00"))
     token_quantity = models.PositiveIntegerField(default=0)
     token_price = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
     token_name = models.CharField(max_length=100)

@@ -24,7 +24,6 @@ class LoginAPIView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             login(request, user)
-            # Para API REST, pode ser interessante retornar um token (ex: com o djangorestframework-simplejwt)
             return Response({
                 'message': 'Login realizado com sucesso!',
                 'user': {

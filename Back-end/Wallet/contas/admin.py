@@ -18,6 +18,6 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Wallet)
 class WalletAdmin(admin.ModelAdmin):
-    list_display = ('user', 'balance', 'token_kz')  # Atualizado para usar "balance"
+    list_display = ('user', 'balance', 'token_kz')
     search_fields = ('user__username', 'user__email')
 
