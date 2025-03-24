@@ -15,7 +15,9 @@ import ConfEnviar from "./page/ConfEnviar";
 import Receber  from "./page/Receber";
 import Deposito from "./page/Deposito";
 import Endereco from "./page/Endereco";
+import Investimento from "./page/Investimento";
 import React from "react";
+import { Import } from "lucide-react";
 
 function App() {
   return (
@@ -37,6 +39,7 @@ function App() {
         <Route path="/receber" element={<Receber />} />
         <Route path="/depositar" element={<Deposito />} />
         <Route path="/endereco" element={<Endereco />} />
+        <Route path="/investimento" element={<Investimento />} />
         <Route path="*" element={<h1>404 | Página não encontrada</h1>} />
       </Routes>
     </Router>
