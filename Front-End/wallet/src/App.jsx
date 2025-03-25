@@ -16,6 +16,7 @@ import Receber  from "./page/Receber";
 import Deposito from "./page/Deposito";
 import Endereco from "./page/Endereco";
 import Investimento from "./page/Investimento";
+import Tokenlist from "./page/Tokenlist";
 import React from "react";
 import { Import } from "lucide-react";
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="/depositar" element={<Deposito />} />
         <Route path="/endereco" element={<Endereco />} />
         <Route path="/investimento" element={<Investimento />} />
+        <Route path="/tokenlist" element={<Tokenlist />} />
         <Route path="*" element={<h1>404 | Página não encontrada</h1>} />
       </Routes>
     </Router>

@@ -7,50 +7,42 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import Menu from "../../components/Menu/Menu";
+import { Link } from "react-router-dom";
 
 /**
  * Tela de Investimento
- * - Mostra saldo de investimento
- * - Botões de Depósito (azul) e Saque (vermelho)
- * - Lista de tokens (Portfolio e Ação)
+ * - Exibe saldo de investimento, botões para Depósito e Saque e listas de tokens
  */
 export default function Investimento() {
   // Estados de dados
   const [portfolioData, setPortfolioData] = useState([]);
   const [stockData, setStockData] = useState([]);
-  const [balance, setBalance] = useState("0.00"); // Saldo da conta de investimento
-  // Se quiser separar parte inteira e decimal, crie states distintos (ex: balance e fraction)
+  const [balance, setBalance] = useState("0.00");
 
-  // Formulários de Depósito e Saque
+  // Estados para os formulários de depósito e saque
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
   const [amount, setAmount] = useState("");
 
-  // Carregar dados da API no mount
+  // Carregar dados da API ao montar o componente
   useEffect(() => {
     fetchPortfolio();
     fetchStocks();
     fetchBalance();
   }, []);
 
-  /**
-   * Busca lista de tokens (portfolio) em /tokens/list/
-   */
+  // Busca lista de tokens (portfolio) em /tokens/list/
   async function fetchPortfolio() {
     try {
       const response = await api.get("tokens/list/");
       // Supondo que a API retorne um array de objetos
-      // Exemplo: [{id, symbol, name, price, change, trend, image}, ...]
       setPortfolioData(response.data);
     } catch (error) {
       console.error("Erro ao buscar portfolio:", error);
     }
   }
 
-  /**
-   * Busca lista de tokens (stock data) em /tokens/list/
-   * Se quiser diferenciar, poderia ter outro endpoint
-   */
+  // Busca lista de tokens (stock data) em /tokens/list/
   async function fetchStocks() {
     try {
       const response = await api.get("tokens/list/");
@@ -60,13 +52,10 @@ export default function Investimento() {
     }
   }
 
-  /**
-   * Busca saldo de investimento em /investment/balance/
-   */
+  // Busca saldo de investimento em /investment/balance/
   async function fetchBalance() {
     try {
       const response = await api.get("investment/balance/");
-      // Exemplo de retorno: { balance: "25901.41" }
       if (response.data.balance) {
         setBalance(response.data.balance);
       }
@@ -75,14 +64,11 @@ export default function Investimento() {
     }
   }
 
-  /**
-   * Função de Depósito em /investment/deposit/
-   */
+  // Função de Depósito em /investment/deposit/
   async function handleDeposit() {
     try {
       const response = await api.post("investment/deposit/", { amount });
-      alert(response.data.message); // "Depósito realizado com sucesso!"
-      // Atualiza saldo e fecha form
+      alert(response.data.message);
       fetchBalance();
       setAmount("");
       setShowDepositForm(false);
@@ -92,14 +78,11 @@ export default function Investimento() {
     }
   }
 
-  /**
-   * Função de Saque em /investment/withdraw/
-   */
+  // Função de Saque em /investment/withdraw/
   async function handleWithdraw() {
     try {
       const response = await api.post("investment/withdraw/", { amount });
-      alert(response.data.message); // "Saque realizado com sucesso!"
-      // Atualiza saldo e fecha form
+      alert(response.data.message);
       fetchBalance();
       setAmount("");
       setShowWithdrawForm(false);
@@ -111,35 +94,31 @@ export default function Investimento() {
 
   return (
     <div className="bg-[#f9f2df] min-h-screen w-full flex flex-col">
-      {/* Container principal, centralizado em telas maiores */}
+      {/* Container principal, centralizado */}
       <div className="max-w-md w-full mx-auto px-4 py-6 flex-1 relative">
-        {/* SESSÃO DE SALDO + GRÁFICO */}
+        {/* Seção de Saldo e Gráfico */}
         <div className="bg-[#f9f2df33] rounded-lg p-4 mb-6">
           <p className="text-sm text-[#343b3a] font-bold mb-1">Saldo</p>
           <h2 className="text-2xl font-semibold text-[#343b3a]">
             PLC {balance}
           </h2>
-          {/* Exemplo de Botão "Esta semana" */}
           <div className="flex justify-between items-center mt-4">
             <button className="inline-flex items-center bg-[#343b3a1a] rounded-md px-3 py-2 opacity-80 text-sm text-[#343b3a]">
               Esta semana
             </button>
           </div>
-          {/* Gráfico */}
           <div className="relative mt-4 h-24 bg-transparent w-full">
             <img
               src="chart.png"
               alt="Chart"
               className="absolute inset-0 w-full h-full object-cover opacity-80"
             />
-            {/* Exemplo de ponto no gráfico */}
             <div className="absolute top-[30%] left-[50%] w-3 h-3 rounded-full bg-[#dc143c] border-2 border-white" />
           </div>
         </div>
 
-        {/* BOTÕES CENTRALIZADOS (Depositar / Enviar) */}
+        {/* Botões de Depósito e Saque */}
         <div className="flex justify-center items-center gap-8 mb-6">
-          {/* Botão Azul: Depositar no Investimento */}
           <button
             className="w-14 h-14 bg-[#1ac4bbcc] rounded-full flex items-center justify-center"
             onClick={() => {
@@ -147,11 +126,8 @@ export default function Investimento() {
               setShowWithdrawForm(false);
             }}
           >
-            {/* Ícone Send (ou outro que preferir) */}
             <Send className="w-5 h-5 text-white" />
           </button>
-
-          {/* Botão Vermelho: Enviar para Wallet */}
           <button
             className="w-14 h-14 bg-[#dc143ccc] rounded-full flex items-center justify-center"
             onClick={() => {
@@ -159,12 +135,11 @@ export default function Investimento() {
               setShowDepositForm(false);
             }}
           >
-            {/* Ícone Download (ou outro que preferir) */}
             <Download className="w-5 h-5 text-white" />
           </button>
         </div>
 
-        {/* FORMULÁRIO DE DEPÓSITO */}
+        {/* Formulário de Depósito */}
         {showDepositForm && (
           <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
@@ -197,7 +172,7 @@ export default function Investimento() {
           </div>
         )}
 
-        {/* FORMULÁRIO DE SAQUE */}
+        {/* Formulário de Saque */}
         {showWithdrawForm && (
           <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
@@ -230,7 +205,7 @@ export default function Investimento() {
           </div>
         )}
 
-        {/* PORTFOLIO */}
+        {/* Seção de Portfolio */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-bold text-[#343b3a]">Portfolio</h3>
@@ -291,11 +266,13 @@ export default function Investimento() {
           )}
         </div>
 
-        {/* AÇÃO (STOCKS) */}
+        {/* Seção de Ação (Stocks) */}
         <div>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-bold text-[#343b3a]">Ação</h3>
-            <button className="text-[#343b3a] text-sm">Ver mais</button>
+            <Link to="/tokenlist" className="text-[#343b3a] text-sm">
+              Ver mais
+            </Link>
           </div>
           {stockData && stockData.length > 0 ? (
             <div className="flex flex-col gap-4">
