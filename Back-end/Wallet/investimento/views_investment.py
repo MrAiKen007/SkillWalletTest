@@ -245,7 +245,6 @@ class TokenCandlestickChartAPIView(APIView):
         if not transactions.exists():
             return Response({"error": "Sem dados para gerar o gráfico."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Constrói uma lista de dicionários com data e preço
         data = []
         for t in transactions:
             data.append({
@@ -257,7 +256,6 @@ class TokenCandlestickChartAPIView(APIView):
         if df.empty:
             return Response({"error": "Sem dados para gerar o gráfico."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Agrupa por data para calcular Open, High, Low, Close
         ohlc = df.groupby("Date").agg({
             "Price": ["first", "max", "min", "last"]
         })

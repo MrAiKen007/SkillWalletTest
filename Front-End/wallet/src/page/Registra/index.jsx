@@ -30,7 +30,7 @@ export default function NovaConta() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/contas/register/",
+        "https://skillwallettest.onrender.com/contas/api/contas/register/",
         {
           username: formData.username,
           email: formData.email,
@@ -42,24 +42,20 @@ export default function NovaConta() {
       alert(response.data.message);
       console.log("Registro realizado com sucesso:", response.data);
 
-      // Armazena o token JWT no localStorage
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
 
-      // Armazena o email do usuário no localStorage
       if (response.data.user?.email) {
         localStorage.setItem("userEmail", response.data.user.email);
       }
-      
-      // Armazena o ID do usuário no localStorage para futuras requisições
       if (response.data.user?.id) {
         localStorage.setItem("user_id", response.data.user.id);
       }
 
-      // Recupera a seed_key retornada pelo back-end
       const seedKey = response.data.seed_key;
-      navigate("/chave_semente_registra", { state: { seedKey } });
+
+      navigate("/chaves_semente_registra", { state: { seedKey } });
     } catch (error) {
       console.error("Erro ao registrar:", error);
       if (error.response?.data) {
@@ -78,6 +74,7 @@ export default function NovaConta() {
   return (
     <div className="flex justify-center w-full min-h-screen bg-[#f9f2df]">
       <div className="relative w-full max-w-[428px] min-h-[926px] px-6 py-4 bg-[#f9f2df]">
+        {/* Botão de Voltar */}
         <button
           className="absolute top-[21px] left-[27px] w-[50px] h-[50px] rounded-full bg-[#dc143c] border-none hover:bg-[#c01236] flex items-center justify-center"
           onClick={() => navigate("/contas")}

@@ -1,43 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, ArrowUp, ArrowDown, Star, Share } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import api from "../../services/api";
 
 export default function TokenView() {
   const { token_id } = useParams();
   const navigate = useNavigate();
 
-  // Estados para os dados do token e gráficos
   const [tokenDetail, setTokenDetail] = useState({});
   const [candlestickChart, setCandlestickChart] = useState("");
   const [transactionHistory, setTransactionHistory] = useState([]);
-  const [investmentBalance, setInvestmentBalance] = useState("0.00");
   const [selectedTab, setSelectedTab] = useState("valor");
   const [loading, setLoading] = useState(false);
 
-  // Estados para os formulários de compra e venda
   const [showBuyForm, setShowBuyForm] = useState(false);
   const [buyQuantity, setBuyQuantity] = useState("");
   const [showSellForm, setShowSellForm] = useState(false);
   const [sellQuantity, setSellQuantity] = useState("");
 
-  // Seletores de período para o gráfico (exemplo fixo)
   const timePeriods = ["12H", "1D", "1W", "1M", "1Y"];
 
   useEffect(() => {
     if (!token_id) return;
     fetchTokenDetail(token_id);
     fetchCandlestickChart(token_id);
-    fetchInvestmentBalance();
     if (selectedTab === "fluxo") {
       fetchTransactionHistory(token_id);
     }
   }, [token_id, selectedTab]);
 
-  // API Calls
   async function fetchTokenDetail(id) {
     try {
-      const response = await api.get(`tokens/${id}/`);
+      const response = await api.get(`/investimento/api/tokens/${id}/`);
       setTokenDetail(response.data);
     } catch (error) {
       console.error("Erro ao buscar detalhes do token:", error);
@@ -47,7 +41,7 @@ export default function TokenView() {
   async function fetchCandlestickChart(id) {
     try {
       setLoading(true);
-      const response = await api.get(`tokens/${id}/candlestick/`);
+      const response = await api.get(`/investimento/api/tokens/${id}/candlestick/`);
       setCandlestickChart(response.data.chart_image);
     } catch (error) {
       console.error("Erro ao buscar gráfico de velas:", error);
@@ -56,41 +50,27 @@ export default function TokenView() {
     }
   }
 
-  async function fetchInvestmentBalance() {
-    try {
-      const response = await api.get("investment/balance/");
-      if (response.data.balance) {
-        setInvestmentBalance(response.data.balance);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar saldo de investimento:", error);
-    }
-  }
-
   async function fetchTransactionHistory(id) {
     try {
-      const response = await api.get(`tokens/${id}/history/`);
+      const response = await api.get(`/investimento/api/tokens/${id}/history/`);
       setTransactionHistory(response.data);
     } catch (error) {
       console.error("Erro ao buscar histórico de transações:", error);
     }
   }
 
-  // Função para realizar compra usando o endpoint de trade
   async function handleBuy() {
     if (!buyQuantity || parseInt(buyQuantity) <= 0) {
       alert("Informe uma quantidade válida para comprar.");
       return;
     }
     try {
-      const response = await api.post(`tokens/${token_id}/trade/`, {
+      const response = await api.post(`/investimento/api/tokens/${token_id}/trade/`, {
         type: "buy",
         quantity: parseInt(buyQuantity),
-        price: tokenDetail.price, // preço atual do token
+        price: tokenDetail.price,
       });
       alert(response.data.message);
-      fetchInvestmentBalance();
-      setBuyQuantity("");
       setShowBuyForm(false);
     } catch (error) {
       console.error("Erro ao comprar:", error);
@@ -98,20 +78,18 @@ export default function TokenView() {
     }
   }
 
-  // Função para realizar venda usando o endpoint de trade
   async function handleSell() {
     if (!sellQuantity || parseInt(sellQuantity) <= 0) {
       alert("Informe uma quantidade válida para vender.");
       return;
     }
     try {
-      const response = await api.post(`tokens/${token_id}/trade/`, {
+      const response = await api.post(`/investimento/api/tokens/${token_id}/trade/`, {
         type: "sell",
         quantity: parseInt(sellQuantity),
         price: tokenDetail.price,
       });
       alert(response.data.message);
-      fetchInvestmentBalance();
       setSellQuantity("");
       setShowSellForm(false);
     } catch (error) {
@@ -128,7 +106,6 @@ export default function TokenView() {
     );
   }
 
-  // Extração dos dados do token (ajuste conforme o serializer do back-end)
   const tokenNameDisplay = tokenDetail?.token_request?.token_name || "Unknown Token";
   const tokenSymbol = tokenDetail?.token_request?.token_symbol || "TKN";
   const tokenSupply = tokenDetail?.supply || 0;

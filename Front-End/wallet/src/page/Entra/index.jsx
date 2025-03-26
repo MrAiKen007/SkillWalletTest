@@ -27,18 +27,16 @@ export default function EntraConta() {
     setErrorPassword("");
 
     try {
-      // Faz login e espera receber seed_key, token e dados do usuário do back-end
-      const response = await axios.post("http://localhost:8000/api/contas/login/", {
+      const response = await axios.post("https://skillwallettest.onrender.com/contas/api/contas/login/", {
         email: formData.email,
         password: formData.password,
       });
 
-      // Armazena o token JWT no localStorage para requisições futuras
+
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
 
-      // Armazena o email e o ID do usuário no localStorage
       if (response.data.user) {
         if (response.data.user.email) {
           localStorage.setItem("userEmail", response.data.user.email);
@@ -48,10 +46,8 @@ export default function EntraConta() {
         }
       }
 
-      // Recupera a seed_key retornada pelo back-end (se houver)
       const seedFromServer = response.data.seed_key;
 
-      // Navega para a tela de confirmação, passando a seed se necessário
       navigate("/chave_semente_entra", { state: { seedKey: seedFromServer } });
     } catch (error) {
       console.error("Erro ao entrar:", error);

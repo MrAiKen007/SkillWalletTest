@@ -13,7 +13,7 @@ from .views_investment import (
     TokenChartAPIView,
     TokenOrderBookAPIView,
     TokenHistoryAPIView,
-    TokenCandlestickChartAPIView,  # Endpoint do gráfico de velas adicionado
+    TokenCandlestickChartAPIView,
 )
 from .views_tokenization import (
     TokenDetailView,

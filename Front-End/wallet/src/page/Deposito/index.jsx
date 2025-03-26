@@ -9,7 +9,7 @@ export default function Deposito() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState("");
 
-  // Função que chama a API de depósito
+
   const handleDeposit = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -18,10 +18,10 @@ export default function Deposito() {
         return;
       }
 
-      // Faz a requisição POST para /api/wallet/deposit/
+ 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/wallet/deposit/",
-        { amount }, // corpo da requisição
+        "https://skillwallettest.onrender.com/contas/api/wallet/deposit/",
+        { amount },
         {
           headers: {
             "Content-Type": "application/json",
@@ -31,9 +31,9 @@ export default function Deposito() {
       );
 
       if (response.status === 200) {
-        // Depósito bem-sucedido
+
         alert("Depósito realizado com sucesso!");
-        // Redireciona para a wallet
+
         navigate("/wallet");
       }
     } catch (error) {

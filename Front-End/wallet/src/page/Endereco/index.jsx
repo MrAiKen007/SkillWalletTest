@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export default function Endereco() {
   const navigate = useNavigate();
 
-  // Obtém o email do usuário do localStorage
+
   const userEmail = localStorage.getItem("userEmail") || "Email não encontrado";
 
   const copyToClipboard = () => {

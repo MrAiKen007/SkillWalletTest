@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Receber() {
-  const navigate = useNavigate(); // Hook para navegação
+  const navigate = useNavigate();
 
 
   const options = [
@@ -11,13 +11,13 @@ export default function Receber() {
       id: 1,
       title: "Receber",
       icon: <Download className="w-6 h-6 text-[#343b3a]" />,
-      route: "/endereco", // Rota para a página de endereço
+      route: "/endereco",
     },
     {
       id: 2,
       title: "Banco",
       icon: <CreditCard className="w-6 h-6 text-[#343b3a]" />,
-      route: "/depositar", // Rota para a página de depósito
+      route: "/depositar",
     },
   ];
 
@@ -38,7 +38,7 @@ export default function Receber() {
           {options.map((option) => (
             <div
               key={option.id}
-              onClick={() => navigate(option.route)} // Navega para a respectiva rota
+              onClick={() => navigate(option.route)}
               className="flex items-center bg-[#d3cbb6] w-full h-[70px] rounded-[10px] p-4 cursor-pointer hover:bg-[#c4b8a5] transition"
             >
               <div className="mr-4">{option.icon}</div>

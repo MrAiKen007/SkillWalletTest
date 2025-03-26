@@ -8,9 +8,9 @@ import axios from "axios";
 export default function Enviar() {
   const navigate = useNavigate();
 
-  // Atualizamos os campos para "email" e "montante"
+
   const [formData, setFormData] = useState({
-    email: "",      // campo para o email do destinatário
+    email: "", 
     montante: "",
   });
   const [activeField, setActiveField] = useState(null);
@@ -37,11 +37,11 @@ export default function Enviar() {
         return;
       }
 
-      // Envia para a API de envio os dados de receiver_email e amount.
+  
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/wallet/send/",
+        "https://skillwallettest.onrender.com/contas/api/wallet/send/",
         {
-          receiver_email: formData.email, // agora usando o campo "email"
+          receiver_email: formData.email,
           amount: formData.montante,
         },
         {
@@ -72,7 +72,7 @@ export default function Enviar() {
       label: "Montante",
       hasDropdown: true,
     },
-    // Campo "comentar" removido
+
   ];
 
   return (

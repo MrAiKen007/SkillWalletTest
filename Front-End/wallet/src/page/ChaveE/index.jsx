@@ -13,7 +13,6 @@ export default function ChaveConfirmar() {
   const seedFromLogin = location.state?.seedKey || "";
 
   const handleConfirmSeed = () => {
-    // Se a seed digitada for igual à seed do login, prossegue
     if (seedInput.trim() === seedFromLogin.trim()) {
       navigate("/chave_semente_entra_confirmado");
     } else {

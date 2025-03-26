@@ -20,9 +20,9 @@ export default function TokenizacaoForm() {
       token_quantity: tokenQuantity,
     };
     try {
-      const response = await api.post("tokenization/configure/", data);
+      const response = await api.post("/investimento/api/tokenization/configure/", data);
       setFeedback(response.data.message || "Pedido enviado com sucesso!");
-      // Limpa o formulário
+
       setTokenName("");
       setTokenSymbol("");
       setTokenPrice("");

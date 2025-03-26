@@ -14,24 +14,19 @@ export default function Investimento() {
   const [portfolioData, setPortfolioData] = useState([]);
   const [stockData, setStockData] = useState([]);
   const [balance, setBalance] = useState("0.00");
-  // Estado para armazenar o símbolo do token
-  const [tokenSymbol, setTokenSymbol] = useState("PLC"); // Valor padrão caso não exista
+  const [tokenSymbol, setTokenSymbol] = useState("PLC");
 
-  // Formulários de depósito e saque
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
   const [amount, setAmount] = useState("");
 
   const navigate = useNavigate();
 
-  // Carrega dados iniciais
   useEffect(() => {
-    // 1. Busca tokens e saldo
     fetchPortfolio();
     fetchStocks();
     fetchBalance();
 
-    // 2. Lê o símbolo do token armazenado (se existir)
     const storedSymbol = localStorage.getItem("token_symbol");
     if (storedSymbol) {
       setTokenSymbol(storedSymbol);
@@ -40,7 +35,7 @@ export default function Investimento() {
 
   async function fetchPortfolio() {
     try {
-      const response = await api.get("tokens/list/");
+      const response = await api.get("/investimento/api/tokens/list/");
       setPortfolioData(response.data);
     } catch (error) {
       console.error("Erro ao buscar portfolio:", error);
@@ -49,7 +44,7 @@ export default function Investimento() {
 
   async function fetchStocks() {
     try {
-      const response = await api.get("tokens/list/");
+      const response = await api.get("/investimento/api/tokens/list/");
       setStockData(response.data);
     } catch (error) {
       console.error("Erro ao buscar stock data:", error);
@@ -58,7 +53,7 @@ export default function Investimento() {
 
   async function fetchBalance() {
     try {
-      const response = await api.get("investment/balance/");
+      const response = await api.get("/investimento/api/investment/balance/");
       if (response.data.balance) {
         setBalance(response.data.balance);
       }
@@ -69,7 +64,7 @@ export default function Investimento() {
 
   async function handleDeposit() {
     try {
-      const response = await api.post("investment/deposit/", { amount });
+      const response = await api.post("/investimento/api/investment/deposit/", { amount });
       alert(response.data.message);
       fetchBalance();
       setAmount("");
@@ -82,7 +77,7 @@ export default function Investimento() {
 
   async function handleWithdraw() {
     try {
-      const response = await api.post("investment/withdraw/", { amount });
+      const response = await api.post("/investimento/api/investment/withdraw/", { amount });
       alert(response.data.message);
       fetchBalance();
       setAmount("");
@@ -93,7 +88,6 @@ export default function Investimento() {
     }
   }
 
-  // Botão que leva para a tela de tokenização
   function goToTokenizacao() {
     const userId = localStorage.getItem("user_id");
     if (userId) {

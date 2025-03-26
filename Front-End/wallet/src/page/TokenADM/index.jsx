@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // ✅ Importação corrigida
 import api from "../../services/api";
 
 export default function TokenizacaoRequests() {
@@ -7,14 +7,13 @@ export default function TokenizacaoRequests() {
   const [requests, setRequests] = useState([]);
   const [feedback, setFeedback] = useState("");
 
-  // Carrega os pedidos assim que o componente é montado
   useEffect(() => {
     fetchRequests();
   }, [navigate]);
 
   async function fetchRequests() {
     try {
-      const response = await api.get("tokenization/requests/");
+      const response = await api.get("/investimento/api/tokenization/requests/");
       setRequests(response.data);
     } catch (error) {
       console.error("Erro ao buscar pedidos:", error);
@@ -23,7 +22,7 @@ export default function TokenizacaoRequests() {
 
   async function handleApprove(requestId) {
     try {
-      const response = await api.post("tokenization/approve/", {
+      const response = await api.post("/investimento/api/tokenization/approve/", {
         request_id: requestId,
       });
       setFeedback(response.data.message);
@@ -38,7 +37,7 @@ export default function TokenizacaoRequests() {
 
   async function handleReject(requestId) {
     try {
-      const response = await api.post("tokenization/reject/", {
+      const response = await api.post("/investimento/api/tokenization/reject/", {
         request_id: requestId,
       });
       setFeedback(response.data.message);

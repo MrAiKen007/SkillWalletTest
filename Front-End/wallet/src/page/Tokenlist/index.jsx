@@ -74,8 +74,7 @@ export default function Acoes() {
   useEffect(() => {
     async function fetchStocks() {
       try {
-        const response = await api.get("tokens/list/");
-        // Supondo que a API retorne um array de tokens
+        const response = await api.get("/investimento/api/tokens/list/");
         setStocks(response.data);
       } catch (error) {
         console.error("Erro ao buscar tokens:", error);

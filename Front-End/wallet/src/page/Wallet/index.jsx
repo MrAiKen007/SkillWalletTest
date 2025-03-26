@@ -6,10 +6,8 @@ import { useNavigate } from "react-router-dom";
 export default function WalletPage() {
   const navigate = useNavigate();
 
-  // Saldo principal (exibido no cabeçalho)
   const [balance, setBalance] = useState("Carregando...");
 
-  // Lista de criptos (incluindo PLC)
   const [cryptoData, setCryptoData] = useState([
     {
       id: 1,
@@ -31,7 +29,6 @@ export default function WalletPage() {
       id: 3,
       name: "PLC",
       icon: "/img/plc.png",
-      // valores provisórios (serão substituídos pelo back-end)
       localAmount: "KZ 1",
       amount: "0", 
       totalValue: "KZ 0"
@@ -47,7 +44,7 @@ export default function WalletPage() {
           return;
         }
 
-        const response = await fetch("http://127.0.0.1:8000/api/wallet/balance/", {
+        const response = await fetch("https://skillwallettest.onrender.com/contas/api/wallet/balance/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -61,20 +58,14 @@ export default function WalletPage() {
 
         const data = await response.json();
         
-        // 1) Atualiza o saldo principal do cabeçalho
         setBalance(`PLC ${data.balance}`);
 
-        // 2) Atualiza o PLC dentro do array cryptoData
         setCryptoData((prevData) =>
           prevData.map((crypto) => {
             if (crypto.name === "PLC") {
-              // Ex.: substitui 'amount' pelo valor real do back-end
               return {
                 ...crypto,
-                amount: data.balance,         // valor do PLC
-                // Se quiser atualizar localAmount ou totalValue
-                // localAmount: `KZ ${data.balance}`,
-                // totalValue: `KZ ${algumCálculo}`
+                amount: data.balance,
               };
             }
             return crypto;
