@@ -1,31 +1,42 @@
 import io
 import base64
 import matplotlib.pyplot as plt
+import mplfinance as mpf
+import pandas as pd
 from decimal import Decimal
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from django.views.generic import TemplateView
-from django.contrib.auth import get_user_model
+from django.views.generic import TemplateView, DetailView
+from django.contrib.auth import get_user_model, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
 from contas.models import Wallet
-from .models import InvestmentAccount, Token, TokenTransaction, Order
-from .serializers import InvestmentAccountSerializer, TokenSerializer, TokenTransactionSerializer
+from .models import InvestmentAccount, Token, TokenTransaction, Order, TokenizationRequest
+from .serializers import (
+    InvestmentAccountSerializer, 
+    TokenSerializer, 
+    TokenTransactionSerializer,
+    TokenizationRequestSerializer
+)
 
 User = get_user_model()
 
-# ------------------------------
+# ==============================
 # DASHBOARD DE INVESTIMENTO
-# ------------------------------
+# ==============================
 class InvestmentDashboardView(TemplateView):
     template_name = "investment_dashboard.html"
 
-# ------------------------------
+
+# ==============================
 # DEPÓSITO / SAQUE
-# ------------------------------
+# ==============================
 class InvestmentDepositAPIView(APIView):
+    """
+    Endpoint para depósito na conta de investimento.
+    """
     def post(self, request):
         user = request.user
         try:
@@ -48,7 +59,11 @@ class InvestmentDepositAPIView(APIView):
             "normal_wallet_balance": str(normal_wallet.balance)
         }, status=status.HTTP_200_OK)
 
+
 class InvestmentWithdrawAPIView(APIView):
+    """
+    Endpoint para saque (retirada) da conta de investimento para a wallet normal.
+    """
     def post(self, request):
         user = request.user
         try:
@@ -71,25 +86,33 @@ class InvestmentWithdrawAPIView(APIView):
             "normal_wallet_balance": str(normal_wallet.balance)
         }, status=status.HTTP_200_OK)
 
-# ------------------------------
+
+# ==============================
 # TOKENS
-# ------------------------------
+# ==============================
 class TokensListAPIView(APIView):
+    """
+    Retorna a lista de tokens disponíveis.
+    """
     def get(self, request):
         tokens = Token.objects.all()
         serializer = TokenSerializer(tokens, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class TokenDetailAPIView(APIView):
+    """
+    Retorna os detalhes de um token específico.
+    """
     def get(self, request, token_id):
         token = get_object_or_404(Token, id=token_id)
         serializer = TokenSerializer(token)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# ------------------------------
-# TRADING (Compra/Venda com ajuste de preço)
-# ------------------------------
 class TokenTradeAPIView(APIView):
+    """
+    Executa uma ordem de trade (compra ou venda) e ajusta o preço do token conforme o impacto.
+    """
     def post(self, request, token_id):
         trade_type = request.data.get("type")
         try:
@@ -108,7 +131,7 @@ class TokenTradeAPIView(APIView):
         investment_account = get_object_or_404(InvestmentAccount, user=user)
         impact_factor = Decimal("0.05")
 
-        # Cria uma ordem no livro (aqui a ordem é executada imediatamente para fins de simulação)
+        # Cria a ordem com status "open"
         order = Order.objects.create(
             token=token,
             user=user,
@@ -174,27 +197,23 @@ class TokenTradeAPIView(APIView):
             order.save()
             return Response({"error": "Tipo de operação inválido. Use 'buy' ou 'sell'."}, status=status.HTTP_400_BAD_REQUEST)
 
-# ------------------------------
-# GRÁFICO, LIVRO DE ORDENS, HISTÓRICO
-# ------------------------------
+# ==============================
+# GRÁFICOS, LIVRO DE ORDENS, HISTÓRICO
+# ==============================
 class TokenChartAPIView(APIView):
     """
-    Retorna dados do gráfico de preços de forma dinâmica,
-    extraindo informações do histórico de transações.
+    Retorna dados do gráfico de preços (linha) extraídos do histórico de transações.
     """
     def get(self, request, token_id):
         transactions = TokenTransaction.objects.filter(token_id=token_id).order_by("created_at")
-        timestamps = []
-        prices = []
-        for t in transactions:
-            timestamps.append(t.created_at.strftime("%H:%M"))
-            prices.append(float(t.price_per_unit))
+        timestamps = [t.created_at.strftime("%H:%M") for t in transactions]
+        prices = [float(t.price_per_unit) for t in transactions]
         return Response({"timestamps": timestamps, "prices": prices}, status=status.HTTP_200_OK)
+
 
 class TokenChartImageAPIView(APIView):
     """
-    Gera uma imagem do gráfico de preços usando Matplotlib e retorna
-    a imagem codificada em base64.
+    Gera uma imagem do gráfico de preços (linha) usando Matplotlib e retorna a imagem codificada em base64.
     """
     def get(self, request, token_id):
         transactions = TokenTransaction.objects.filter(token_id=token_id).order_by("created_at")
@@ -215,7 +234,50 @@ class TokenChartImageAPIView(APIView):
         plt.close()
         return Response({"chart_image": image_base64}, status=status.HTTP_200_OK)
 
+
+class TokenCandlestickChartAPIView(APIView):
+    """
+    Gera um gráfico de velas (candlestick) a partir do histórico de transações de um token.
+    Agrupa os dados por data para calcular os valores OHLC e retorna a imagem em base64.
+    """
+    def get(self, request, token_id):
+        transactions = TokenTransaction.objects.filter(token_id=token_id).order_by("created_at")
+        if not transactions.exists():
+            return Response({"error": "Sem dados para gerar o gráfico."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Constrói uma lista de dicionários com data e preço
+        data = []
+        for t in transactions:
+            data.append({
+                "Date": t.created_at.date(),
+                "Price": float(t.price_per_unit)
+            })
+        
+        df = pd.DataFrame(data)
+        if df.empty:
+            return Response({"error": "Sem dados para gerar o gráfico."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Agrupa por data para calcular Open, High, Low, Close
+        ohlc = df.groupby("Date").agg({
+            "Price": ["first", "max", "min", "last"]
+        })
+        ohlc.columns = ["Open", "High", "Low", "Close"]
+        ohlc.index = pd.to_datetime(ohlc.index)
+        
+        if ohlc.empty:
+            return Response({"error": "Dados insuficientes para gerar o gráfico."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        buf = io.BytesIO()
+        mpf.plot(ohlc, type="candle", style="charles", volume=False, savefig=buf)
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return Response({"chart_image": image_base64}, status=status.HTTP_200_OK)
+
+
 class TokenOrderBookAPIView(APIView):
+    """
+    Retorna o livro de ordens (compra e venda) para um token.
+    """
     def get(self, request, token_id):
         token = get_object_or_404(Token, id=token_id)
         buy_orders = token.orders.filter(order_type="buy", status="open")
@@ -225,7 +287,11 @@ class TokenOrderBookAPIView(APIView):
         data = {"buy": buy_data, "sell": sell_data}
         return Response(data, status=status.HTTP_200_OK)
 
+
 class TokenHistoryAPIView(APIView):
+    """
+    Retorna o histórico de transações para um token.
+    """
     def get(self, request, token_id):
         transactions = TokenTransaction.objects.filter(token_id=token_id).order_by("-created_at")
         data = []
@@ -240,10 +306,14 @@ class TokenHistoryAPIView(APIView):
             })
         return Response(data, status=status.HTTP_200_OK)
 
-# ------------------------------
+
+# ==============================
 # SALDO DE INVESTIMENTO
-# ------------------------------
+# ==============================
 class InvestmentBalanceAPIView(APIView):
+    """
+    Retorna o saldo da conta de investimento do usuário autenticado.
+    """
     def get(self, request):
         user = request.user
         if not user.is_authenticated:
@@ -254,9 +324,10 @@ class InvestmentBalanceAPIView(APIView):
         except InvestmentAccount.DoesNotExist:
             return Response({"balance": "0"}, status=200)
 
-# ------------------------------
-# COMPRAR / VENDER SIMPLES (APENAS PARA REFERÊNCIA)
-# ------------------------------
+
+# ==============================
+# COMPRA / VENDA SIMPLES (REFERÊNCIA)
+# ==============================
 class TokenBuyAPIView(APIView):
     def post(self, request):
         user = request.user
@@ -288,6 +359,7 @@ class TokenBuyAPIView(APIView):
             "new_balance": str(investment_account.balance)
         }, status=status.HTTP_200_OK)
 
+
 class TokenSellAPIView(APIView):
     def post(self, request):
         user = request.user
@@ -316,4 +388,3 @@ class TokenSellAPIView(APIView):
             "transaction_id": transaction.id,
             "new_balance": str(investment_account.balance)
         }, status=status.HTTP_200_OK)
-

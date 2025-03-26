@@ -1,9 +1,9 @@
-import BotaoCont from '../../components/Botao/BotaoCont';
-import InputForm from '../../components/Input/Registra/inputForm';
-import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import BotaoCont from '../../components/Botao/BotaoCont';
+import InputForm from '../../components/Input/Registra/inputForm';
+import { ChevronLeft, Eye, EyeOff } from "lucide-react";
 
 export default function EntraConta() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -27,7 +27,7 @@ export default function EntraConta() {
     setErrorPassword("");
 
     try {
-      // Faz login e espera receber seed_key e token do back-end
+      // Faz login e espera receber seed_key, token e dados do usuário do back-end
       const response = await axios.post("http://localhost:8000/api/contas/login/", {
         email: formData.email,
         password: formData.password,
@@ -38,15 +38,20 @@ export default function EntraConta() {
         localStorage.setItem("token", response.data.token);
       }
 
-      // Armazena o email do usuário no localStorage
-      if (response.data.user && response.data.user.email) {
-        localStorage.setItem("userEmail", response.data.user.email);
+      // Armazena o email e o ID do usuário no localStorage
+      if (response.data.user) {
+        if (response.data.user.email) {
+          localStorage.setItem("userEmail", response.data.user.email);
+        }
+        if (response.data.user.id) {
+          localStorage.setItem("user_id", response.data.user.id);
+        }
       }
 
-      // Se o back-end retornar a seed_key, guarde em uma variável
+      // Recupera a seed_key retornada pelo back-end (se houver)
       const seedFromServer = response.data.seed_key;
 
-      // Navegue para a tela de confirmação, passando a seed
+      // Navega para a tela de confirmação, passando a seed se necessário
       navigate("/chave_semente_entra", { state: { seedKey: seedFromServer } });
     } catch (error) {
       console.error("Erro ao entrar:", error);
@@ -74,7 +79,7 @@ export default function EntraConta() {
 
   return (
     <main className="bg-[#f9f2df] flex justify-center items-center w-full min-h-screen px-4">
-      <div className="bg-[#f9f2df] w-full max-w-sm sm:max-w-md h-auto py-10 px-6 rounded-lg shadow-md relative">
+      <div className="bg-[#f9f2df] w-full max-w-sm sm:max-w-md h-auto py-10 px-6 bg-[#f9f2df] rounded-lg shadow-md relative">
         {/* Botão de Voltar */}
         <button
           className="absolute top-6 left-6 w-12 h-12 flex items-center justify-center rounded-full bg-[#dc143c] hover:bg-[#c01236]"
@@ -110,7 +115,11 @@ export default function EntraConta() {
                     onClick={() => setMostrarSenha(!mostrarSenha)}
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#343b3a] hover:text-[#222] focus:outline-none"
                   >
-                    {mostrarSenha ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {mostrarSenha ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 )}
               </div>

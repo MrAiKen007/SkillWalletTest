@@ -51,10 +51,15 @@ export default function NovaConta() {
       if (response.data.user?.email) {
         localStorage.setItem("userEmail", response.data.user.email);
       }
+      
+      // Armazena o ID do usuário no localStorage para futuras requisições
+      if (response.data.user?.id) {
+        localStorage.setItem("user_id", response.data.user.id);
+      }
 
-      // Recupera a seed retornada pelo back-end
+      // Recupera a seed_key retornada pelo back-end
       const seedKey = response.data.seed_key;
-      navigate("/chaves_semente_registra", { state: { seedKey } });
+      navigate("/chave_semente_registra", { state: { seedKey } });
     } catch (error) {
       console.error("Erro ao registrar:", error);
       if (error.response?.data) {

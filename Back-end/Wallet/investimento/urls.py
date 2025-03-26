@@ -13,6 +13,7 @@ from .views_investment import (
     TokenChartAPIView,
     TokenOrderBookAPIView,
     TokenHistoryAPIView,
+    TokenCandlestickChartAPIView,  # Endpoint do gráfico de velas adicionado
 )
 from .views_tokenization import (
     TokenDetailView,
@@ -41,8 +42,8 @@ urlpatterns = [
     path('api/tokens/sell/', TokenSellAPIView.as_view(), name='token_sell'),
     path('api/tokens/<int:token_id>/trade/', TokenTradeAPIView.as_view(), name='token_trade'),
     path('api/tokens/<int:token_id>/chart/', TokenChartAPIView.as_view(), name='token_chart'),
-    path('api/tokens/<int:token_id>/orderbook/', TokenOrderBookAPIView.as_view(), name='token_orderbook'),
     path('api/tokens/<int:token_id>/history/', TokenHistoryAPIView.as_view(), name='token_history'),
+    path('api/tokens/<int:token_id>/candlestick/', TokenCandlestickChartAPIView.as_view(), name='token_candlestick'),
 
     # Tokenização
     path('investment/token/<int:pk>/', TokenDetailView.as_view(), name='token_detail'),

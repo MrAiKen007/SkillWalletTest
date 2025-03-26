@@ -4,45 +4,49 @@ import {
   ArrowDown,
   Send,
   Download,
+  Tag,
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import Menu from "../../components/Menu/Menu";
-import { Link } from "react-router-dom";
 
-/**
- * Tela de Investimento
- * - Exibe saldo de investimento, botões para Depósito e Saque e listas de tokens
- */
 export default function Investimento() {
-  // Estados de dados
   const [portfolioData, setPortfolioData] = useState([]);
   const [stockData, setStockData] = useState([]);
   const [balance, setBalance] = useState("0.00");
+  // Estado para armazenar o símbolo do token
+  const [tokenSymbol, setTokenSymbol] = useState("PLC"); // Valor padrão caso não exista
 
-  // Estados para os formulários de depósito e saque
+  // Formulários de depósito e saque
   const [showDepositForm, setShowDepositForm] = useState(false);
   const [showWithdrawForm, setShowWithdrawForm] = useState(false);
   const [amount, setAmount] = useState("");
 
-  // Carregar dados da API ao montar o componente
+  const navigate = useNavigate();
+
+  // Carrega dados iniciais
   useEffect(() => {
+    // 1. Busca tokens e saldo
     fetchPortfolio();
     fetchStocks();
     fetchBalance();
+
+    // 2. Lê o símbolo do token armazenado (se existir)
+    const storedSymbol = localStorage.getItem("token_symbol");
+    if (storedSymbol) {
+      setTokenSymbol(storedSymbol);
+    }
   }, []);
 
-  // Busca lista de tokens (portfolio) em /tokens/list/
   async function fetchPortfolio() {
     try {
       const response = await api.get("tokens/list/");
-      // Supondo que a API retorne um array de objetos
       setPortfolioData(response.data);
     } catch (error) {
       console.error("Erro ao buscar portfolio:", error);
     }
   }
 
-  // Busca lista de tokens (stock data) em /tokens/list/
   async function fetchStocks() {
     try {
       const response = await api.get("tokens/list/");
@@ -52,7 +56,6 @@ export default function Investimento() {
     }
   }
 
-  // Busca saldo de investimento em /investment/balance/
   async function fetchBalance() {
     try {
       const response = await api.get("investment/balance/");
@@ -64,7 +67,6 @@ export default function Investimento() {
     }
   }
 
-  // Função de Depósito em /investment/deposit/
   async function handleDeposit() {
     try {
       const response = await api.post("investment/deposit/", { amount });
@@ -78,7 +80,6 @@ export default function Investimento() {
     }
   }
 
-  // Função de Saque em /investment/withdraw/
   async function handleWithdraw() {
     try {
       const response = await api.post("investment/withdraw/", { amount });
@@ -92,15 +93,25 @@ export default function Investimento() {
     }
   }
 
+  // Botão que leva para a tela de tokenização
+  function goToTokenizacao() {
+    const userId = localStorage.getItem("user_id");
+    if (userId) {
+      navigate(`/token/${userId}`);
+    } else {
+      alert("ID do usuário não encontrado.");
+    }
+  }
+
   return (
     <div className="bg-[#f9f2df] min-h-screen w-full flex flex-col">
-      {/* Container principal, centralizado */}
       <div className="max-w-md w-full mx-auto px-4 py-6 flex-1 relative">
         {/* Seção de Saldo e Gráfico */}
         <div className="bg-[#f9f2df33] rounded-lg p-4 mb-6">
           <p className="text-sm text-[#343b3a] font-bold mb-1">Saldo</p>
+          {/* Aqui usamos o símbolo do token no lugar de "PLC" */}
           <h2 className="text-2xl font-semibold text-[#343b3a]">
-            PLC {balance}
+            {tokenSymbol} {balance}
           </h2>
           <div className="flex justify-between items-center mt-4">
             <button className="inline-flex items-center bg-[#343b3a1a] rounded-md px-3 py-2 opacity-80 text-sm text-[#343b3a]">
@@ -117,7 +128,7 @@ export default function Investimento() {
           </div>
         </div>
 
-        {/* Botões de Depósito e Saque */}
+        {/* Botões (Depósito, Saque, Tokenização) */}
         <div className="flex justify-center items-center gap-8 mb-6">
           <button
             className="w-14 h-14 bg-[#1ac4bbcc] rounded-full flex items-center justify-center"
@@ -137,9 +148,15 @@ export default function Investimento() {
           >
             <Download className="w-5 h-5 text-white" />
           </button>
+          <button
+            className="w-14 h-14 bg-[#8a2be2] rounded-full flex items-center justify-center"
+            onClick={goToTokenizacao}
+          >
+            <Tag className="w-5 h-5 text-white" />
+          </button>
         </div>
 
-        {/* Formulário de Depósito */}
+        {/* Formulário Depósito */}
         {showDepositForm && (
           <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
@@ -172,7 +189,7 @@ export default function Investimento() {
           </div>
         )}
 
-        {/* Formulário de Saque */}
+        {/* Formulário Saque */}
         {showWithdrawForm && (
           <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
@@ -218,7 +235,8 @@ export default function Investimento() {
               {portfolioData.slice(0, 2).map((item) => (
                 <div
                   key={item.id}
-                  className="w-40 h-24 bg-[#343b3a1a] rounded-md p-3 flex flex-col justify-between"
+                  className="w-40 h-24 bg-[#343b3a1a] rounded-md p-3 flex flex-col justify-between cursor-pointer"
+                  onClick={() => navigate(`/tokenview/${item.id}`)}
                 >
                   <div className="flex items-center gap-2">
                     <img
@@ -277,7 +295,11 @@ export default function Investimento() {
           {stockData && stockData.length > 0 ? (
             <div className="flex flex-col gap-4">
               {stockData.slice(0, 4).map((stock) => (
-                <div key={stock.id} className="flex items-center">
+                <div
+                  key={stock.id}
+                  className="flex items-center cursor-pointer"
+                  onClick={() => navigate(`/tokenview/${stock.id}`)}
+                >
                   <img
                     src={stock.image}
                     alt={stock.symbol}
@@ -326,7 +348,6 @@ export default function Investimento() {
         </div>
       </div>
 
-      {/* MENU FIXO NO RODAPÉ */}
       <Menu activePage="chart" />
     </div>
   );

@@ -12,13 +12,15 @@ import Historico from "./page/Historico";
 import Configuracao from "./page/Configuracao";
 import Enviar from "./page/Enviar";
 import ConfEnviar from "./page/ConfEnviar";
-import Receber  from "./page/Receber";
+import Receber from "./page/Receber";
 import Deposito from "./page/Deposito";
 import Endereco from "./page/Endereco";
 import Investimento from "./page/Investimento";
 import Tokenlist from "./page/Tokenlist";
+import TokenView from "./page/TokenView";
+import TokenC from "./page/TokenC";
+import TokenADM from "./page/TokenADM";
 import React from "react";
-import { Import } from "lucide-react";
 
 function App() {
   return (
@@ -42,6 +44,9 @@ function App() {
         <Route path="/endereco" element={<Endereco />} />
         <Route path="/investimento" element={<Investimento />} />
         <Route path="/tokenlist" element={<Tokenlist />} />
+        <Route path="/tokenview/:id" element={<TokenView />} />
+        <Route path="/token/:id" element={<TokenC />} />
+        <Route path="/tokenadm" element={<TokenADM />} />
         <Route path="*" element={<h1>404 | Página não encontrada</h1>} />
       </Routes>
     </Router>
