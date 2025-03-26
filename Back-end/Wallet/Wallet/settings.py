@@ -44,12 +44,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'Wallet.urls'
@@ -129,9 +129,9 @@ ENCRYPTION_KEY = os.environ.get("ENCRYPTION_KEY")
 ASGI_APPLICATION = 'Wallet.asgi.application'
 
 CORS_ALLOWED_ORIGINS = [
+    "https://skillwallet.netlify.app",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://skillwallet.netlify.app/",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
