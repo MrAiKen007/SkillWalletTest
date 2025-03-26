@@ -1,2 +1,1 @@
-web: daphne Wallet.asgi:application --port $PORT --bind 0.0.0.0 -v2
-web: uvicorn Wallet.asgi:application --host 0.0.0.0 --port $PORT
+web: daphne Wallet.asgi:application --bind 0.0.0.0 --port $PORT
