@@ -131,6 +131,7 @@ ASGI_APPLICATION = 'Wallet.asgi.application'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://skillwallet.netlify.app/",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
