@@ -3,7 +3,6 @@ import { Download, UserPlus } from "lucide-react";
 import React from "react";
 
 export default function Conta() {
-  
   const accountActions = [
     {
       id: 1,
@@ -20,9 +19,9 @@ export default function Conta() {
   ];
 
   return (
-    <main className="bg-[#f9f2df] flex justify-center w-full min-h-screen p-4">
-      {/* Container central */}
-      <div className="bg-[#f9f2df] w-full max-w-[428px] md:max-w-[600px] lg:max-w-[800px] h-auto md:h-[926px] relative px-3">
+    <main className="bg-[#f9f2df] flex justify-center items-center w-full h-screen p-4 overflow-hidden">
+      {/* Container central fixo */}
+      <div className="bg-[#f9f2df] w-full max-w-[428px] md:max-w-[600px] lg:max-w-[800px] h-screen relative px-3">
         <header className="pt-[90px] pb-6">
           <h1 className="text-2xl md:text-3xl font-black text-[#343b3a] [font-family:'Lufga-Black',Helvetica]">
             Conta
@@ -30,7 +29,7 @@ export default function Conta() {
         </header>
 
         <section className="space-y-3">
-        {accountActions.map((action) => (
+          {accountActions.map((action) => (
             <Link key={action.id} to={action.path}>
               <div className="bg-[#343b3a33] rounded-[15px] cursor-pointer hover:bg-[#343b3a40] transition-colors">
                 <div className="p-0">

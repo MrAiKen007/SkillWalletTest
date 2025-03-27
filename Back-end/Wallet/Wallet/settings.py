@@ -1,5 +1,6 @@
 import dj_database_url
 from pathlib import Path
+from datetime import timedelta
 import os
 from cryptography.fernet import Fernet
 from dotenv import load_dotenv
@@ -159,5 +160,10 @@ REST_FRAMEWORK = {
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+}
 
 application = get_asgi_application()

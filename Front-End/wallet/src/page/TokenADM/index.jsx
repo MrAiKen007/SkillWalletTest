@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Importação corrigida
+import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 export default function TokenizacaoRequests() {
