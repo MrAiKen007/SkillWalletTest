@@ -17,7 +17,6 @@ export default function NovaConta() {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    // Não removemos espaços aqui para permitir que o usuário digite nomes com espaços
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
@@ -55,6 +54,7 @@ export default function NovaConta() {
       }
 
       const seedKey = response.data.seed_key;
+
       navigate("/chaves_semente_registra", { state: { seedKey } });
     } catch (error) {
       console.error("Erro ao registrar:", error);
