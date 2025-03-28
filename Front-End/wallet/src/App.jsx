@@ -46,7 +46,7 @@ function App() {
         <Route path="/tokenlist" element={<Tokenlist />} />
         <Route path="/tokenview/:id" element={<TokenView />} />
         <Route path="/token/:id" element={<TokenC />} />
-        <Route path="/tokenadm" element={<TokenADM />} />
+        <Route path="/tokenadm/:id" element={<TokenADM />} />
         <Route path="*" element={<h1>404 | Página não encontrada</h1>} />
       </Routes>
     </Router>
