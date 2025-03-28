@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  ArrowUp,
-  ArrowDown,
-  Send,
-  Download,
-  Tag,
-} from "lucide-react";
+import { ArrowUp, ArrowDown, Send, Download, Tag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import Menu from "../../components/Menu/Menu";
@@ -98,12 +92,15 @@ export default function Investimento() {
   }
 
   return (
-    <div className="bg-[#f9f2df] min-h-screen w-full flex flex-col">
-      <div className="max-w-md w-full mx-auto px-4 py-6 flex-1 relative">
+    // 1) Container raiz: flex-col + min-h-screen
+    <div className="bg-[#f9f2df] min-h-screen flex flex-col">
+      
+      {/* 2) Conteúdo principal, com flex-1 e overflow se precisar */}
+      <div className="flex-1 w-full max-w-md mx-auto px-4 py-6 relative">
+        
         {/* Seção de Saldo e Gráfico */}
         <div className="bg-[#f9f2df33] rounded-lg p-4 mb-6">
           <p className="text-sm text-[#343b3a] font-bold mb-1">Saldo</p>
-          {/* Aqui usamos o símbolo do token no lugar de "PLC" */}
           <h2 className="text-2xl font-semibold text-[#343b3a]">
             {tokenSymbol} {balance}
           </h2>
@@ -152,7 +149,7 @@ export default function Investimento() {
 
         {/* Formulário Depósito */}
         {showDepositForm && (
-          <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
+          <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-50">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
               Depositar no Investimento
             </h3>
@@ -185,7 +182,7 @@ export default function Investimento() {
 
         {/* Formulário Saque */}
         {showWithdrawForm && (
-          <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-10">
+          <div className="absolute top-40 left-1/2 transform -translate-x-1/2 w-72 bg-white border border-gray-300 rounded-lg p-4 z-50">
             <h3 className="text-lg font-semibold text-[#343b3a] mb-2">
               Enviar para Wallet
             </h3>
@@ -342,6 +339,7 @@ export default function Investimento() {
         </div>
       </div>
 
+      {/* 3) Menu fixo no rodapé */}
       <Menu activePage="chart" />
     </div>
   );
